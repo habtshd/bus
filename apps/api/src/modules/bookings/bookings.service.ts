@@ -40,11 +40,20 @@ export class BookingsService {
     }
 
     // Determine traversed segments
+    const targetFrom = dto.fromStopId.toUpperCase().trim();
+    const targetTo = dto.toStopId.toUpperCase().trim();
+
     const fromIndex = trip.tripSegments.findIndex(
-      (s) => s.fromStopId === dto.fromStopId,
+      (s) =>
+        s.fromStopId === dto.fromStopId ||
+        s.fromStop?.code?.toUpperCase() === targetFrom ||
+        s.fromStopId === `stop_${targetFrom}`,
     );
     const toIndex = trip.tripSegments.findIndex(
-      (s) => s.toStopId === dto.toStopId,
+      (s) =>
+        s.toStopId === dto.toStopId ||
+        s.toStop?.code?.toUpperCase() === targetTo ||
+        s.toStopId === `stop_${targetTo}`,
     );
 
     if (fromIndex === -1 || toIndex === -1 || fromIndex > toIndex) {

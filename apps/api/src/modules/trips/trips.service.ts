@@ -157,17 +157,30 @@ export class TripsService {
       where: {
         tripId,
       },
+      include: {
+        fromStop: true,
+        toStop: true,
+      },
       orderBy: {
         sequenceNumber: 'asc',
       },
     });
 
+    const targetFrom = fromStopId.toUpperCase().trim();
+    const targetTo = toStopId.toUpperCase().trim();
+
     const fromIndex = segments.findIndex(
-      (s) => s.fromStopId === fromStopId,
+      (s) =>
+        s.fromStopId === fromStopId ||
+        s.fromStop?.code?.toUpperCase() === targetFrom ||
+        s.fromStopId === `stop_${targetFrom}`,
     );
 
     const toIndex = segments.findIndex(
-      (s) => s.toStopId === toStopId,
+      (s) =>
+        s.toStopId === toStopId ||
+        s.toStop?.code?.toUpperCase() === targetTo ||
+        s.toStopId === `stop_${targetTo}`,
     );
 
     if (

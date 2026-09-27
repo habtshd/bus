@@ -19,15 +19,25 @@ export class ReservationsService {
     return this.prisma.$transaction(async (tx) => {
       const segments = await tx.tripSegment.findMany({
         where: { tripId },
+        include: { fromStop: true, toStop: true },
         orderBy: { sequenceNumber: 'asc' },
       });
 
+      const targetFrom = fromStopId.toUpperCase().trim();
+      const targetTo = toStopId.toUpperCase().trim();
+
       const fromIndex = segments.findIndex(
-        (s) => s.fromStopId === fromStopId,
+        (s) =>
+          s.fromStopId === fromStopId ||
+          s.fromStop?.code?.toUpperCase() === targetFrom ||
+          s.fromStopId === `stop_${targetFrom}`,
       );
 
       const toIndex = segments.findIndex(
-        (s) => s.toStopId === toStopId,
+        (s) =>
+          s.toStopId === toStopId ||
+          s.toStop?.code?.toUpperCase() === targetTo ||
+          s.toStopId === `stop_${targetTo}`,
       );
 
       if (
@@ -84,6 +94,10 @@ export class ReservationsService {
       return {
         reservationId: reservation.id,
         expiresAt: reservation.expiresAt,
+        seats: seatIds.map((s) => ({
+          seat: s,
+          status: 'HELD',
+        })),
       };
     });
   }
