@@ -45,3 +45,7 @@ jobs:
       - name: Run Trip & Inventory Engine Tests
         working-directory: apps/api
         run: npm run test:engine
+
+      - name: Run Agent & Terminal System Tests
+        working-directory: apps/api
+        run: npm run test:agent

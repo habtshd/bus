@@ -13,7 +13,8 @@
     "db:push": "prisma db push",
     "db:seed": "tsx src/db/seed.ts",
     "test:concurrency": "tsx src/test/concurrency.test.ts",
-    "test:engine": "tsx src/modules/trips/trips-inventory-engine.spec.ts"
+    "test:engine": "tsx src/modules/trips/trips-inventory-engine.spec.ts",
+    "test:agent": "tsx src/modules/agent/agent-terminal-system.spec.ts"
   },
   "dependencies": {
     "@bus/shared": "file:../../packages/shared",
