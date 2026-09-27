@@ -130,17 +130,15 @@ export const PassengerMobileSimulator: React.FC<PassengerMobileSimulatorProps> =
 
   return (
     <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-        <div className="badge badge-gold" style={{ marginBottom: '6px' }}>
-          DAYS 19–21 • FLUTTER PASSENGER MOBILE APP
-        </div>
-        <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-main)' }}>
-          {isAmharic ? 'የመንገደኛ ሞባይል መተግበሪያ' : 'Passenger Mobile App Simulator'}
+      <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+        <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '4px' }}>
+          {isAmharic ? 'የመንገደኛ ሞባይል መተግበሪያ' : 'Passenger Mobile App'}
         </h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', maxWidth: '600px' }}>
-          Pure mobile architecture: Fast, simple, reliable intercity coach ticketing, Telebirr checkout, and digital QR boarding pass.
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+          {isAmharic ? 'የቴሌብር ክፍያ እና የQR ቦርዲንግ' : 'Fast booking, Telebirr checkout & QR ticket'}
         </p>
       </div>
+
 
       {/* Realistic Mobile Device Frame - Theme Adaptive */}
       <div

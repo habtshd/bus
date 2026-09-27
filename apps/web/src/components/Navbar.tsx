@@ -207,35 +207,24 @@ export const Navbar: React.FC<NavbarProps> = ({
               <ChevronDown size={13} style={{ transform: isPortalsOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
             </button>
 
-            {/* Modernist Dropdown Menu */}
+            {/* Modernist Compact Dropdown Menu */}
             {isPortalsOpen && (
               <div style={{
                 position: 'absolute',
                 top: 'calc(100% + 8px)',
                 right: 0,
-                width: '320px',
+                width: '220px',
                 background: 'var(--bg-surface)',
                 border: '1px solid var(--border-subtle)',
-                borderRadius: '16px',
-                padding: '12px',
+                borderRadius: '14px',
+                padding: '6px',
                 boxShadow: 'var(--shadow-lg)',
                 zIndex: 1000,
                 backdropFilter: 'blur(24px)'
               }}>
-                <div style={{ 
-                  padding: '4px 10px 8px', 
-                  fontSize: '0.72rem', 
-                  fontWeight: 700, 
-                  color: 'var(--text-muted)', 
-                  textTransform: 'uppercase', 
-                  letterSpacing: '0.06em' 
-                }}>
-                  {isAmharic ? 'የኩባንያው የስራ ክፍሎች' : 'Internal Portals & Operations'}
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                   
-                  {/* Target Flow (5-Actor) */}
+                  {/* Target Flow */}
                   <button
                     onClick={() => handleSelectTab('target-demo')}
                     style={{
@@ -243,29 +232,25 @@ export const Navbar: React.FC<NavbarProps> = ({
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       width: '100%',
-                      padding: '8px 10px',
+                      padding: '7px 10px',
                       background: currentTab === 'target-demo' ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
                       border: 'none',
                       borderRadius: '8px',
                       color: currentTab === 'target-demo' ? 'var(--ethiopia-gold)' : 'var(--text-main)',
                       cursor: 'pointer',
-                      fontSize: '0.84rem',
-                      textAlign: 'left'
+                      fontSize: '0.84rem'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Sparkles size={16} color="var(--ethiopia-gold)" />
-                      <div>
-                        <div style={{ fontWeight: 600 }}>{isAmharic ? 'የዒላማ ፍሰት (5-ተዋናይ)' : '5-Actor Target Chain'}</div>
-                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Admin → Passenger → Agent → Conductor → Lead</div>
-                      </div>
+                      <Sparkles size={15} color="var(--ethiopia-gold)" />
+                      <span style={{ fontWeight: 600 }}>{isAmharic ? 'የዒላማ ፍሰት' : 'Target Flow (5-Actor)'}</span>
                     </div>
                     {currentTab === 'target-demo' && <Check size={14} color="var(--ethiopia-gold)" />}
                   </button>
 
-                  <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '4px 0' }} />
+                  <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '3px 0' }} />
 
-                  {/* Frontline POS Counter */}
+                  {/* Agent POS */}
                   <button
                     onClick={() => handleSelectTab('agent')}
                     style={{
@@ -273,22 +258,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       width: '100%',
-                      padding: '8px 10px',
+                      padding: '7px 10px',
                       background: currentTab === 'agent' ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
                       border: 'none',
                       borderRadius: '8px',
                       color: currentTab === 'agent' ? 'var(--ethiopia-gold)' : 'var(--text-main)',
                       cursor: 'pointer',
-                      fontSize: '0.84rem',
-                      textAlign: 'left'
+                      fontSize: '0.84rem'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <Store size={15} color="var(--text-muted)" />
-                      <div>
-                        <div style={{ fontWeight: 600 }}>{isAmharic ? 'የቲኬት ቆጣሪ POS' : 'Agent POS Counter'}</div>
-                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Cash sales, thermal printing & shift drawer</div>
-                      </div>
+                      <span style={{ fontWeight: 500 }}>{isAmharic ? 'ካውንተር POS' : 'Agent POS'}</span>
                     </div>
                     {currentTab === 'agent' && <Check size={14} color="var(--ethiopia-gold)" />}
                   </button>
@@ -301,27 +282,23 @@ export const Navbar: React.FC<NavbarProps> = ({
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       width: '100%',
-                      padding: '8px 10px',
+                      padding: '7px 10px',
                       background: currentTab === 'driver' ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
                       border: 'none',
                       borderRadius: '8px',
                       color: currentTab === 'driver' ? 'var(--ethiopia-gold)' : 'var(--text-main)',
                       cursor: 'pointer',
-                      fontSize: '0.84rem',
-                      textAlign: 'left'
+                      fontSize: '0.84rem'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <Radio size={15} color="var(--text-muted)" />
-                      <div>
-                        <div style={{ fontWeight: 600 }}>{isAmharic ? 'የአሽከርካሪ መተግበሪያ' : 'Driver Cockpit'}</div>
-                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>GPS telemetry, speed monitoring & passenger log</div>
-                      </div>
+                      <span style={{ fontWeight: 500 }}>{isAmharic ? 'አሽከርካሪ' : 'Driver Cockpit'}</span>
                     </div>
                     {currentTab === 'driver' && <Check size={14} color="var(--ethiopia-gold)" />}
                   </button>
 
-                  {/* Conductor QR Scanner */}
+                  {/* Conductor Scanner */}
                   <button
                     onClick={() => handleSelectTab('conductor')}
                     style={{
@@ -329,27 +306,23 @@ export const Navbar: React.FC<NavbarProps> = ({
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       width: '100%',
-                      padding: '8px 10px',
+                      padding: '7px 10px',
                       background: currentTab === 'conductor' ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
                       border: 'none',
                       borderRadius: '8px',
                       color: currentTab === 'conductor' ? 'var(--ethiopia-gold)' : 'var(--text-main)',
                       cursor: 'pointer',
-                      fontSize: '0.84rem',
-                      textAlign: 'left'
+                      fontSize: '0.84rem'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <QrCode size={15} color="var(--text-muted)" />
-                      <div>
-                        <div style={{ fontWeight: 600 }}>{isAmharic ? 'የኮንዳክተር QR ስካነር' : 'Conductor QR Scanner'}</div>
-                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Gate boarding validation & fraud prevention</div>
-                      </div>
+                      <span style={{ fontWeight: 500 }}>{isAmharic ? 'QR ስካነር' : 'Conductor Scanner'}</span>
                     </div>
                     {currentTab === 'conductor' && <Check size={14} color="var(--ethiopia-gold)" />}
                   </button>
 
-                  {/* Dispatcher Control */}
+                  {/* Fleet Dispatcher */}
                   <button
                     onClick={() => handleSelectTab('dispatch')}
                     style={{
@@ -357,22 +330,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       width: '100%',
-                      padding: '8px 10px',
+                      padding: '7px 10px',
                       background: currentTab === 'dispatch' ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
                       border: 'none',
                       borderRadius: '8px',
                       color: currentTab === 'dispatch' ? 'var(--ethiopia-gold)' : 'var(--text-main)',
                       cursor: 'pointer',
-                      fontSize: '0.84rem',
-                      textAlign: 'left'
+                      fontSize: '0.84rem'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <Radio size={15} color="var(--text-muted)" />
-                      <div>
-                        <div style={{ fontWeight: 600 }}>{isAmharic ? 'የኦፕሬሽን ስምሪት' : 'Fleet Dispatcher'}</div>
-                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Bus assignments, delays & live telemetry map</div>
-                      </div>
+                      <span style={{ fontWeight: 500 }}>{isAmharic ? 'ስምሪት' : 'Fleet Dispatch'}</span>
                     </div>
                     {currentTab === 'dispatch' && <Check size={14} color="var(--ethiopia-gold)" />}
                   </button>
@@ -385,27 +354,23 @@ export const Navbar: React.FC<NavbarProps> = ({
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       width: '100%',
-                      padding: '8px 10px',
+                      padding: '7px 10px',
                       background: currentTab === 'manifest' ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
                       border: 'none',
                       borderRadius: '8px',
                       color: currentTab === 'manifest' ? 'var(--ethiopia-gold)' : 'var(--text-main)',
                       cursor: 'pointer',
-                      fontSize: '0.84rem',
-                      textAlign: 'left'
+                      fontSize: '0.84rem'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <ShieldCheck size={15} color="var(--text-muted)" />
-                      <div>
-                        <div style={{ fontWeight: 600 }}>{isAmharic ? 'የፍተሻ ኬላ ማኒፌስት' : 'Checkpoint Manifest'}</div>
-                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Federal Police & Kebele compliance report</div>
-                      </div>
+                      <span style={{ fontWeight: 500 }}>{isAmharic ? 'ማኒፌስት' : 'Police Manifest'}</span>
                     </div>
                     {currentTab === 'manifest' && <Check size={14} color="var(--ethiopia-gold)" />}
                   </button>
 
-                  <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '4px 0' }} />
+                  <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '3px 0' }} />
 
                   {/* Management & Analytics */}
                   <button
@@ -415,22 +380,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       width: '100%',
-                      padding: '8px 10px',
+                      padding: '7px 10px',
                       background: currentTab === 'analytics' ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
                       border: 'none',
                       borderRadius: '8px',
                       color: currentTab === 'analytics' ? 'var(--ethiopia-gold)' : 'var(--text-main)',
                       cursor: 'pointer',
-                      fontSize: '0.84rem',
-                      textAlign: 'left'
+                      fontSize: '0.84rem'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <BarChart3 size={15} color="var(--text-muted)" />
-                      <div>
-                        <div style={{ fontWeight: 600 }}>{isAmharic ? 'የስራ አስኪያጅ ዳሽቦርድ' : 'Management & Analytics'}</div>
-                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Revenue, load factor & settlement ledger</div>
-                      </div>
+                      <span style={{ fontWeight: 500 }}>{isAmharic ? 'ማኔጅመንት' : 'Management'}</span>
                     </div>
                     {currentTab === 'analytics' && <Check size={14} color="var(--ethiopia-gold)" />}
                   </button>
@@ -443,22 +404,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       width: '100%',
-                      padding: '8px 10px',
+                      padding: '7px 10px',
                       background: currentTab === 'pilot-launch' ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
                       border: 'none',
                       borderRadius: '8px',
                       color: currentTab === 'pilot-launch' ? 'var(--ethiopia-gold)' : 'var(--text-main)',
                       cursor: 'pointer',
-                      fontSize: '0.84rem',
-                      textAlign: 'left'
+                      fontSize: '0.84rem'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <Rocket size={15} color="var(--ethiopia-gold)" />
-                      <div>
-                        <div style={{ fontWeight: 600 }}>{isAmharic ? 'የፓይለት ምረቃ ማዕከል' : 'Launch & Pilot Center'}</div>
-                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Readiness checklist & live corridor rollout</div>
-                      </div>
+                      <span style={{ fontWeight: 500 }}>{isAmharic ? 'ምረቃ' : 'Launch & Pilot'}</span>
                     </div>
                     {currentTab === 'pilot-launch' && <Check size={14} color="var(--ethiopia-gold)" />}
                   </button>
@@ -466,6 +423,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </div>
               </div>
             )}
+
           </div>
         </nav>
 
