@@ -447,8 +447,8 @@ export const DriverPortal: React.FC<DriverPortalProps> = ({ isAmharic }) => {
               className="glass-panel"
               style={{
                 padding: '24px',
-                border: '1px solid rgba(56, 189, 248, 0.35)',
-                background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(24, 34, 52, 0.98) 100%)'
+                border: '1px solid var(--border-subtle)',
+                background: 'var(--panel-bg)'
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
@@ -464,7 +464,7 @@ export const DriverPortal: React.FC<DriverPortalProps> = ({ isAmharic }) => {
               {/* Speedometer Gauge Display */}
               <div
                 style={{
-                  background: '#0B0F19',
+                  background: 'var(--bg-input)',
                   borderRadius: '12px',
                   padding: '20px',
                   textAlign: 'center',
@@ -483,7 +483,7 @@ export const DriverPortal: React.FC<DriverPortalProps> = ({ isAmharic }) => {
               </div>
 
               {/* Current Milestone Location */}
-              <div style={{ background: '#0F172A', padding: '14px', borderRadius: '10px', marginBottom: '16px' }}>
+              <div style={{ background: 'var(--bg-input)', border: '1px solid var(--border-subtle)', padding: '14px', borderRadius: '10px', marginBottom: '16px' }}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>CURRENT HIGHWAY LOCATION</div>
                 <div style={{ fontWeight: 800, fontSize: '1rem', color: '#38BDF8', marginTop: '4px' }}>
                   📍 {currentMilestone.name}
@@ -542,17 +542,17 @@ export const DriverPortal: React.FC<DriverPortalProps> = ({ isAmharic }) => {
               <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>
                 Passenger Manifest — {manifestData.tripCode}
               </h3>
-              <button onClick={() => setShowManifestModal(false)} style={{ background: 'none', border: 'none', color: '#FFF', cursor: 'pointer' }}>
+              <button onClick={() => setShowManifestModal(false)} style={{ background: 'none', border: 'none', color: 'var(--text-main)', cursor: 'pointer' }}>
                 <X size={20} />
               </button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {manifestData.passengers.map((p: any) => (
-                <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: '#0F172A', borderRadius: '8px', fontSize: '0.85rem' }}>
+                <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: 'var(--bg-input)', border: '1px solid var(--border-subtle)', borderRadius: '8px', fontSize: '0.85rem' }}>
                   <div>
                     <span className="badge badge-gold" style={{ marginRight: '8px' }}>Seat {p.seatNumber}</span>
-                    <strong style={{ color: '#FFF' }}>{p.passengerName}</strong>
+                    <strong style={{ color: 'var(--text-main)' }}>{p.passengerName}</strong>
                     <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '2px' }}>
                       ID: {p.passengerIdNumber} • Phone: {p.passengerPhone}
                     </div>

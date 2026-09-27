@@ -137,7 +137,7 @@ export const PilotLaunchCenter: React.FC<PilotLaunchCenterProps> = ({ isAmharic 
             <button onClick={handleSeedPilot} className="btn btn-secondary">
               <Bus size={15} /> Initialize Pilot Trip #501
             </button>
-            <div style={{ display: 'flex', background: 'rgba(24, 34, 52, 0.7)', padding: '4px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ display: 'flex', background: 'var(--nav-pill-bg)', padding: '4px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
               <button
                 onClick={() => setActiveTab('pilot')}
                 className={`btn ${activeTab === 'pilot' ? 'btn-primary' : 'btn-secondary'}`}

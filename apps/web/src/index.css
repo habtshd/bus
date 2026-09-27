@@ -4,12 +4,18 @@
   --font-primary: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-amharic: 'Noto Sans Ethiopic', 'Plus Jakarta Sans', sans-serif;
 
-  /* Color Palette */
+  /* Surfaces & Backgrounds - Dark Mode Default */
   --bg-main: #0B0F19;
   --bg-surface: #111827;
   --bg-card: #182234;
   --bg-card-hover: #1E2B42;
   --bg-input: #0F172A;
+  --navbar-bg: rgba(11, 15, 25, 0.95);
+  --nav-pill-bg: rgba(24, 34, 52, 0.7);
+  --hero-bg: linear-gradient(135deg, rgba(24, 34, 52, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+  --hero-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  --panel-bg: rgba(24, 34, 52, 0.7);
+  --table-header-bg: #0F172A;
   
   --border-subtle: rgba(255, 255, 255, 0.08);
   --border-focus: rgba(245, 158, 11, 0.5);
@@ -38,10 +44,17 @@
   --seat-available: #1E293B;
   --seat-available-border: #334155;
   --seat-available-hover: #2E3E58;
+  --seat-available-text: #E2E8F0;
   --seat-selected: #F59E0B;
-  --seat-booked: #DC2626;
-  --seat-locked: #EAB308;
-  --seat-boarded: #10B981;
+  --seat-booked: #3B1818;
+  --seat-booked-border: #5C1D1D;
+  --seat-booked-text: #FCA5A5;
+  --seat-locked: #3A2E12;
+  --seat-locked-border: #634E17;
+  --seat-locked-text: #FDE047;
+  --seat-boarded: #133E2B;
+  --seat-boarded-border: #1B5E3F;
+  --seat-boarded-text: #6EE7B7;
 
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
@@ -54,6 +67,67 @@
   --radius-md: 10px;
   --radius-lg: 16px;
   --radius-xl: 24px;
+}
+
+/* White Mode / Light Mode Theme */
+[data-theme="light"] {
+  --bg-main: #F8FAFC;
+  --bg-surface: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #F1F5F9;
+  --bg-input: #FFFFFF;
+  --navbar-bg: rgba(255, 255, 255, 0.96);
+  --nav-pill-bg: #E2E8F0;
+  --hero-bg: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
+  --hero-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  --panel-bg: rgba(255, 255, 255, 0.95);
+  --table-header-bg: #F1F5F9;
+
+  --border-subtle: #E2E8F0;
+  --border-focus: rgba(217, 119, 6, 0.5);
+
+  /* Rich contrast accents for white mode */
+  --ethiopia-gold: #D97706;
+  --ethiopia-gold-hover: #B45309;
+  --ethiopia-gold-glow: rgba(217, 119, 6, 0.15);
+
+  --ethiopia-green: #059669;
+  --ethiopia-green-hover: #047857;
+  --ethiopia-green-glow: rgba(5, 150, 105, 0.15);
+
+  --ethiopia-red: #DC2626;
+  --ethiopia-red-hover: #B91C1C;
+
+  --telebirr-blue: #0284C7;
+  --telebirr-blue-hover: #0369A1;
+
+  --text-main: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+  --text-gold: #B45309;
+
+  /* Seat States in White Mode */
+  --seat-available: #F8FAFC;
+  --seat-available-border: #CBD5E1;
+  --seat-available-hover: #E2E8F0;
+  --seat-available-text: #1E293B;
+  --seat-selected: #F59E0B;
+  --seat-booked: #FEE2E2;
+  --seat-booked-border: #FCA5A5;
+  --seat-booked-text: #991B1B;
+  --seat-locked: #FEF3C7;
+  --seat-locked-border: #FCD34D;
+  --seat-locked-text: #854D0E;
+  --seat-boarded: #D1FAE5;
+  --seat-boarded-border: #6EE7B7;
+  --seat-boarded-text: #065F46;
+
+  /* Shadows for White Mode */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --shadow-gold: 0 4px 14px rgba(217, 119, 6, 0.15);
+  --shadow-green: 0 4px 14px rgba(5, 150, 105, 0.15);
 }
 
 * {
@@ -70,6 +144,7 @@ body {
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
   overflow-x: hidden;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Amharic Text Helper */
@@ -93,13 +168,31 @@ body {
   background: #475569;
 }
 
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
 /* Glass Container Utility */
 .glass-panel {
-  background: rgba(24, 34, 52, 0.7);
+  background: var(--panel-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+[data-theme="light"] .glass-panel {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
 }
 
 /* Glowing Badges */
@@ -247,7 +340,7 @@ body {
 .seat-item.available {
   background: var(--seat-available);
   border-color: var(--seat-available-border);
-  color: #E2E8F0;
+  color: var(--seat-available-text);
 }
 .seat-item.available:hover {
   background: var(--seat-available-hover);
@@ -264,25 +357,67 @@ body {
 }
 
 .seat-item.booked {
-  background: #3B1818;
-  border-color: #5C1D1D;
-  color: #FCA5A5;
+  background: var(--seat-booked);
+  border-color: var(--seat-booked-border);
+  color: var(--seat-booked-text);
   cursor: not-allowed;
-  opacity: 0.65;
+  opacity: 0.85;
 }
 
 .seat-item.locked {
-  background: #3A2E12;
-  border-color: #634E17;
-  color: #FDE047;
+  background: var(--seat-locked);
+  border-color: var(--seat-locked-border);
+  color: var(--seat-locked-text);
   cursor: not-allowed;
-  opacity: 0.75;
+  opacity: 0.85;
 }
 
 .seat-item.boarded {
-  background: #133E2B;
-  border-color: #1B5E3F;
-  color: #6EE7B7;
+  background: var(--seat-boarded);
+  border-color: var(--seat-boarded-border);
+  color: var(--seat-boarded-text);
+}
+
+/* Light Mode Component Overrides */
+[data-theme="light"] .btn-secondary {
+  background: #F1F5F9;
+  color: #1E293B;
+  border: 1px solid #CBD5E1;
+}
+[data-theme="light"] .btn-secondary:hover {
+  background: #E2E8F0;
+  border-color: #94A3B8;
+}
+
+[data-theme="light"] .badge-gold {
+  background: #FEF3C7;
+  color: #B45309;
+  border: 1px solid #FCD34D;
+}
+
+[data-theme="light"] .badge-green {
+  background: #D1FAE5;
+  color: #065F46;
+  border: 1px solid #6EE7B7;
+}
+
+[data-theme="light"] .badge-blue {
+  background: #E0F2FE;
+  color: #0369A1;
+  border: 1px solid #7DD3FC;
+}
+
+[data-theme="light"] .badge-red {
+  background: #FEE2E2;
+  color: #991B1B;
+  border: 1px solid #FCA5A5;
+}
+
+[data-theme="light"] .form-input,
+[data-theme="light"] .form-select {
+  background: #FFFFFF;
+  border-color: #CBD5E1;
+  color: #0F172A;
 }
 
 /* Bus Aisle */

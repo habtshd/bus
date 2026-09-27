@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar, AppTab } from './components/Navbar';
 import { PassengerPortal } from './components/PassengerPortal';
 import { MyBookingsView } from './components/MyBookingsView';
@@ -14,6 +14,19 @@ import { PilotLaunchCenter } from './components/PilotLaunchCenter';
 export function App() {
   const [currentTab, setTab] = useState<AppTab>('passenger');
   const [isAmharic, setIsAmharic] = useState(false);
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const saved = localStorage.getItem('bus_theme');
+    return (saved as 'dark' | 'light') || 'light'; // Default to White Mode as requested
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('bus_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+  };
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }} className={isAmharic ? 'lang-am' : ''}>
@@ -22,6 +35,8 @@ export function App() {
         setTab={setTab}
         isAmharic={isAmharic}
         setIsAmharic={setIsAmharic}
+        theme={theme}
+        toggleTheme={toggleTheme}
       />
 
       <main style={{ flex: 1 }}>
@@ -43,7 +58,8 @@ export function App() {
         textAlign: 'center',
         color: 'var(--text-muted)',
         fontSize: '0.8rem',
-        background: '#0B0F19'
+        background: 'var(--bg-surface)',
+        transition: 'background-color 0.2s ease, border-color 0.2s ease'
       }}>
         <div>Abyssinia Intercity Bus Platform © 2026. All rights reserved.</div>
         <div style={{ marginTop: '4px' }}>

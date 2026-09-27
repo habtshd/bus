@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bus, Ticket, Store, ShieldCheck, QrCode, BarChart3, Globe, Radio, Search, Rocket } from 'lucide-react';
+import { Bus, Ticket, Store, ShieldCheck, QrCode, BarChart3, Globe, Radio, Search, Rocket, Sun, Moon } from 'lucide-react';
 
 export type AppTab = 'passenger' | 'mobile-app' | 'my-bookings' | 'agent' | 'driver' | 'dispatch' | 'manifest' | 'conductor' | 'analytics' | 'pilot-launch';
 
@@ -8,17 +8,20 @@ interface NavbarProps {
   setTab: (tab: AppTab) => void;
   isAmharic: boolean;
   setIsAmharic: (val: boolean) => void;
+  theme: 'dark' | 'light';
+  toggleTheme: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ currentTab, setTab, isAmharic, setIsAmharic }) => {
+export const Navbar: React.FC<NavbarProps> = ({ currentTab, setTab, isAmharic, setIsAmharic, theme, toggleTheme }) => {
   return (
     <header style={{
       borderBottom: '1px solid var(--border-subtle)',
-      background: 'rgba(11, 15, 25, 0.95)',
+      background: 'var(--navbar-bg)',
       backdropFilter: 'blur(16px)',
       position: 'sticky',
       top: 0,
-      zIndex: 50
+      zIndex: 50,
+      transition: 'background-color 0.2s ease, border-color 0.2s ease'
     }}>
       <div style={{
         maxWidth: '1440px',
@@ -56,7 +59,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setTab, isAmharic, s
         </div>
 
         {/* Navigation Tabs */}
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(24, 34, 52, 0.7)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border-subtle)', flexWrap: 'wrap' }}>
+        <nav style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--nav-pill-bg)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border-subtle)', flexWrap: 'wrap' }}>
           <button
             onClick={() => setTab('passenger')}
             className={`btn ${currentTab === 'passenger' ? 'btn-primary' : 'btn-secondary'}`}
@@ -148,8 +151,37 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setTab, isAmharic, s
           </button>
         </nav>
 
-        {/* Right actions: Language & API status */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {/* Right actions: White/Dark Mode Toggle, Language & API status */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* White / Dark Mode Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="btn btn-secondary"
+            style={{
+              padding: '6px 12px',
+              fontSize: '0.8rem',
+              gap: '6px',
+              border: theme === 'light' ? '1px solid var(--ethiopia-gold)' : '1px solid var(--border-subtle)'
+            }}
+            title={theme === 'light' ? 'Switch to Dark Mode (ጨለማ)' : 'Switch to White Mode (ነጭ)'}
+          >
+            {theme === 'light' ? (
+              <>
+                <Sun size={15} color="var(--ethiopia-gold)" />
+                <span style={{ fontWeight: 700, color: 'var(--ethiopia-gold)' }}>
+                  {isAmharic ? 'ነጭ ሁነታ' : 'White Mode'}
+                </span>
+              </>
+            ) : (
+              <>
+                <Moon size={15} color="#94A3B8" />
+                <span style={{ fontWeight: 700 }}>
+                  {isAmharic ? 'ጨለማ ሁነታ' : 'Dark Mode'}
+                </span>
+              </>
+            )}
+          </button>
+
           <button
             onClick={() => setIsAmharic(!isAmharic)}
             className="btn btn-secondary"

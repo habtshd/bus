@@ -225,7 +225,8 @@ export const ConductorBoardingScanner: React.FC<ConductorBoardingScannerProps> =
               <div style={{
                 marginTop: '12px',
                 padding: '12px',
-                background: '#0F172A',
+                background: 'var(--bg-input)',
+                border: '1px solid var(--border-subtle)',
                 borderRadius: '8px',
                 display: 'grid',
                 gridTemplateColumns: 'repeat(2, 1fr)',

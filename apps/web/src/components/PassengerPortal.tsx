@@ -231,9 +231,9 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
         style={{
           padding: '36px',
           marginBottom: '32px',
-          background: 'linear-gradient(135deg, rgba(24, 34, 52, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%)',
+          background: 'var(--hero-bg)',
           border: '1px solid rgba(245, 158, 11, 0.3)',
-          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6)',
+          boxShadow: 'var(--hero-shadow)',
           position: 'relative',
           overflow: 'hidden'
         }}
@@ -256,7 +256,7 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
               lineHeight: 1.15,
               letterSpacing: '-0.02em',
               marginBottom: '12px',
-              color: '#FFFFFF'
+              color: 'var(--text-main)'
             }}
           >
             {isAmharic
@@ -387,22 +387,22 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
             gap: '16px',
             marginTop: '24px',
             paddingTop: '20px',
-            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+            borderTop: '1px solid var(--border-subtle)',
             fontSize: '0.85rem'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <ShieldCheck size={20} color="var(--ethiopia-green)" />
             <div>
-              <div style={{ fontWeight: 700, color: '#FFF' }}>100% Guaranteed Seats</div>
+              <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>100% Guaranteed Seats</div>
               <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>No overbooking policy</div>
             </div>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Smartphone size={20} color="#38BDF8" />
+            <Smartphone size={20} color="#0284C7" />
             <div>
-              <div style={{ fontWeight: 700, color: '#FFF' }}>Telebirr & CBE Birr</div>
+              <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>Telebirr & CBE Birr</div>
               <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Instant payment confirmation</div>
             </div>
           </div>
@@ -410,15 +410,15 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Clock size={20} color="var(--ethiopia-gold)" />
             <div>
-              <div style={{ fontWeight: 700, color: '#FFF' }}>On-Time 05:00 Departures</div>
+              <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>On-Time 05:00 Departures</div>
               <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Strict morning scheduling</div>
             </div>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Wifi size={20} color="#C084FC" />
+            <Wifi size={20} color="#8B5CF6" />
             <div>
-              <div style={{ fontWeight: 700, color: '#FFF' }}>AC & Free WiFi</div>
+              <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>AC & Free WiFi</div>
               <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Purified bottled water on board</div>
             </div>
           </div>
@@ -754,7 +754,8 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
                   {/* Price Calculation Breakdown */}
                   <div
                     style={{
-                      background: '#0B0F19',
+                      background: 'var(--bg-input)',
+                      border: '1px solid var(--border-subtle)',
                       padding: '14px',
                       borderRadius: '10px',
                       fontSize: '0.85rem',
@@ -811,10 +812,10 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
                 style={{
                   marginTop: '20px',
                   padding: '24px',
-                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(24, 34, 52, 0.95) 100%)',
+                  background: 'var(--bg-card)',
                   borderRadius: '16px',
                   border: '2px solid var(--ethiopia-green)',
-                  boxShadow: '0 0 30px var(--ethiopia-green-glow)'
+                  boxShadow: 'var(--shadow-md)'
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '18px' }}>
@@ -824,7 +825,7 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
                       Booking Confirmed & Ticket Issued!
                     </h4>
                     <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                      Booking PNR: <strong style={{ color: '#FFF' }}>{confirmedBooking.bookingReference}</strong> • Paid via {confirmedBooking.paymentMethod}
+                      Booking PNR: <strong style={{ color: 'var(--text-main)' }}>{confirmedBooking.bookingReference}</strong> • Paid via {confirmedBooking.paymentMethod}
                     </div>
                   </div>
                 </div>
@@ -837,7 +838,7 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
                       style={{
                         display: 'flex',
                         gap: '16px',
-                        background: '#0F172A',
+                        background: 'var(--bg-input)',
                         padding: '16px',
                         borderRadius: '12px',
                         border: '1px dashed var(--border-subtle)',
@@ -860,7 +861,7 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
                           </span>
                           <span style={{ fontWeight: 800, color: 'var(--text-gold)' }}>{tkt.ticketNumber}</span>
                         </div>
-                        <div style={{ fontWeight: 800, fontSize: '1rem', color: '#FFF' }}>{tkt.passengerName}</div>
+                        <div style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-main)' }}>{tkt.passengerName}</div>
                         <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
                           ID: {tkt.passengerIdNumber} • Phone: {tkt.passengerPhone}
                         </div>

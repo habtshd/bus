@@ -198,7 +198,7 @@ export const SeatMap: React.FC<SeatMapProps> = ({
         gap: '14px',
         justifyContent: 'center',
         padding: '12px 18px',
-        background: 'rgba(24, 34, 52, 0.6)',
+        background: 'var(--bg-input)',
         borderRadius: '12px',
         border: '1px solid var(--border-subtle)',
         fontSize: '0.8rem'
@@ -208,15 +208,15 @@ export const SeatMap: React.FC<SeatMapProps> = ({
           <span>AVAILABLE ({layout.availableCount})</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <div style={{ width: '16px', height: '16px', borderRadius: '4px', background: '#3A2E12', border: '1px solid #634E17' }}></div>
+          <div style={{ width: '16px', height: '16px', borderRadius: '4px', background: 'var(--seat-locked)', border: '1px solid var(--seat-locked-border)' }}></div>
           <span>HELD ({layout.heldCount || layout.lockedCount})</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <div style={{ width: '16px', height: '16px', borderRadius: '4px', background: '#3B1818', border: '1px solid #5C1D1D' }}></div>
+          <div style={{ width: '16px', height: '16px', borderRadius: '4px', background: 'var(--seat-booked)', border: '1px solid var(--seat-booked-border)' }}></div>
           <span>PAID ({layout.paidCount || layout.bookedCount})</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <div style={{ width: '16px', height: '16px', borderRadius: '4px', background: '#133E2B', border: '1px solid #1B5E3F' }}></div>
+          <div style={{ width: '16px', height: '16px', borderRadius: '4px', background: 'var(--seat-boarded)', border: '1px solid var(--seat-boarded-border)' }}></div>
           <span>BOARDED ({layout.boardedCount || 0})</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>

@@ -435,10 +435,10 @@ export const AgentCounterPOS: React.FC<AgentCounterPOSProps> = ({ isAmharic }) =
         {searchedPassengers.length > 0 && (
           <div
             style={{
-              background: '#0B0F19',
+              background: 'var(--bg-input)',
               padding: '12px',
               borderRadius: '8px',
-              border: '1px solid #38BDF8',
+              border: '1px solid var(--border-focus)',
               marginTop: '4px'
             }}
           >
@@ -737,7 +737,7 @@ export const AgentCounterPOS: React.FC<AgentCounterPOSProps> = ({ isAmharic }) =
               {/* Payment Detail Box */}
               <div
                 style={{
-                  background: '#0B0F19',
+                  background: 'var(--bg-input)',
                   padding: '16px',
                   borderRadius: '10px',
                   border: '1px solid var(--border-subtle)'
@@ -1012,7 +1012,7 @@ export const AgentCounterPOS: React.FC<AgentCounterPOSProps> = ({ isAmharic }) =
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '16px' }}>
                   {rescheduleSuccessResult.message}
                 </p>
-                <div style={{ background: '#0B0F19', padding: '16px', borderRadius: '8px', marginBottom: '16px', textAlign: 'left' }}>
+                <div style={{ background: 'var(--bg-input)', border: '1px solid var(--border-subtle)', padding: '16px', borderRadius: '8px', marginBottom: '16px', textAlign: 'left' }}>
                   <div>New Ticket: <strong>{rescheduleSuccessResult.newTicket.ticketNumber}</strong></div>
                   <div>New Seat: <strong>{rescheduleSuccessResult.newTicket.seatNumber}</strong></div>
                   <div>Trip: {rescheduleSuccessResult.newTrip.tripCode} ({rescheduleSuccessResult.newTrip.route})</div>
@@ -1024,7 +1024,7 @@ export const AgentCounterPOS: React.FC<AgentCounterPOSProps> = ({ isAmharic }) =
               </div>
             ) : (
               <form onSubmit={handleExecuteReschedule} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div style={{ background: '#0F172A', padding: '12px', borderRadius: '8px', fontSize: '0.85rem' }}>
+                <div style={{ background: 'var(--bg-input)', border: '1px solid var(--border-subtle)', padding: '12px', borderRadius: '8px', fontSize: '0.85rem' }}>
                   <div>Passenger: <strong>{ticketToReschedule.passengerName}</strong></div>
                   <div>Current Seat: <strong>{ticketToReschedule.seatNumber}</strong> ({ticketToReschedule.ticketNumber})</div>
                 </div>
@@ -1118,7 +1118,7 @@ export const AgentCounterPOS: React.FC<AgentCounterPOSProps> = ({ isAmharic }) =
                 <h4 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--ethiopia-green)' }}>
                   Refund Successfully Processed!
                 </h4>
-                <div style={{ background: '#0B0F19', padding: '16px', borderRadius: '8px', margin: '16px 0', textAlign: 'left', fontSize: '0.9rem' }}>
+                <div style={{ background: 'var(--bg-input)', border: '1px solid var(--border-subtle)', padding: '16px', borderRadius: '8px', margin: '16px 0', textAlign: 'left', fontSize: '0.9rem' }}>
                   <div>Refund Voucher: <strong>{refundSuccessResult.receiptNumber}</strong></div>
                   <div>Original Fare: {refundSuccessResult.originalAmountETB} ETB</div>
                   <div>Admin Deduction: -{refundSuccessResult.adminFeeETB} ETB</div>
@@ -1135,7 +1135,7 @@ export const AgentCounterPOS: React.FC<AgentCounterPOSProps> = ({ isAmharic }) =
               </div>
             ) : (
               <form onSubmit={handleExecuteRefund} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div style={{ background: '#0F172A', padding: '12px', borderRadius: '8px', fontSize: '0.85rem' }}>
+                <div style={{ background: 'var(--bg-input)', border: '1px solid var(--border-subtle)', padding: '12px', borderRadius: '8px', fontSize: '0.85rem' }}>
                   <div>Booking PNR: <strong>{selectedBookingForAction.bookingReference}</strong></div>
                   <div>Total Amount: <strong>{selectedBookingForAction.totalAmountETB} ETB</strong></div>
                 </div>
@@ -1242,7 +1242,8 @@ export const AgentCounterPOS: React.FC<AgentCounterPOSProps> = ({ isAmharic }) =
               <div>
                 <div
                   style={{
-                    background: '#0F172A',
+                    background: 'var(--bg-input)',
+                    border: '1px solid var(--border-subtle)',
                     padding: '16px',
                     borderRadius: '10px',
                     display: 'flex',

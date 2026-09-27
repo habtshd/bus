@@ -264,7 +264,7 @@ export const MyBookingsView: React.FC<MyBookingsViewProps> = ({ isAmharic }) => 
               <div
                 key={tkt.id}
                 style={{
-                  background: '#0B0F19',
+                  background: 'var(--bg-input)',
                   border: '1px solid var(--border-subtle)',
                   borderRadius: '12px',
                   padding: '20px',

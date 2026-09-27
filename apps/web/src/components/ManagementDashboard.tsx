@@ -173,7 +173,7 @@ export const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ isAmha
         </div>
 
         {/* Sub-Tabs Navigation */}
-        <div style={{ display: 'flex', gap: '6px', background: 'rgba(24, 34, 52, 0.7)', padding: '4px', borderRadius: '10px', border: '1px solid var(--border-subtle)', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '6px', background: 'var(--nav-pill-bg)', padding: '4px', borderRadius: '10px', border: '1px solid var(--border-subtle)', flexWrap: 'wrap' }}>
           <button
             onClick={() => setActiveTab('overview')}
             className={`btn ${activeTab === 'overview' ? 'btn-primary' : 'btn-secondary'}`}
