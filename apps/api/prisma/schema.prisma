@@ -1,0 +1,170 @@
+// Prisma schema for Ethiopian Intercity Bus Platform
+// Supports SQLite for zero-config local prototyping, easily swappable to PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  fullName     String
+  phone        String
+  role         String    // SUPER_ADMIN | BRANCH_MANAGER | TICKET_AGENT | DISPATCHER | CONDUCTOR | PASSENGER
+  branchId     String?
+  branch       Branch?   @relation(fields: [branchId], references: [id])
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  bookings     Booking[]
+  cashShifts   CashShift[]
+}
+
+model Branch {
+  id        String    @id @default(uuid())
+  nameEn    String    // e.g. Autobis Tera Main Branch
+  nameAm    String    // e.g. አውቶቡስ ተራ ዋና ቅርንጫፍ
+  city      String    // e.g. Addis Ababa
+  address   String
+  phone     String
+  users     User[]
+  bookings  Booking[]
+  cashShifts CashShift[]
+  createdAt DateTime  @default(now())
+}
+
+model Station {
+  id                 String   @id @default(uuid())
+  nameEn             String   // e.g. Addis Ababa - Autobis Tera
+  nameAm             String   // e.g. አዲስ አበባ - አውቶቡስ ተራ
+  city               String
+  terminalArea       String
+  latitude           Float?
+  longitude          Float?
+  originRoutes       Route[]  @relation("OriginStation")
+  destinationRoutes  Route[]  @relation("DestinationStation")
+  createdAt          DateTime @default(now())
+}
+
+model Route {
+  id                     String   @id @default(uuid())
+  originStationId        String
+  destinationStationId   String
+  originStation          Station  @relation("OriginStation", fields: [originStationId], references: [id])
+  destinationStation     Station  @relation("DestinationStation", fields: [destinationStationId], references: [id])
+  distanceKm             Int
+  estimatedDurationHours Float
+  baseFareETB            Float
+  active                 Boolean  @default(true)
+  trips                  Trip[]
+  createdAt              DateTime @default(now())
+}
+
+model Bus {
+  id          String   @id @default(uuid())
+  plateNumber String   @unique // e.g. 3-45678 ET
+  sideNumber  String   @unique // e.g. BUS-101
+  busModel    String   // e.g. Zhongtong Navigator / Golden Dragon
+  busType     String   // LUXURY_2X2 | STANDARD_2X3
+  totalSeats  Int
+  status      String   @default("ACTIVE") // ACTIVE | MAINTENANCE | STANDBY | OUT_OF_SERVICE
+  amenities   String   @default("AC,WiFi,Water") // Comma-separated
+  trips       Trip[]
+  createdAt   DateTime @default(now())
+}
+
+model Trip {
+  id                   String     @id @default(uuid())
+  tripCode             String     @unique // e.g. ETB-AA-HW-01
+  routeId              String
+  route                Route      @relation(fields: [routeId], references: [id])
+  busId                String
+  bus                  Bus        @relation(fields: [busId], references: [id])
+  driverName           String
+  driverPhone          String
+  conductorName        String
+  conductorPhone       String
+  departureTime        DateTime
+  estimatedArrivalTime DateTime
+  fareETB              Float
+  status               String     @default("SCHEDULED") // SCHEDULED | BOARDING | DEPARTED | IN_TRANSIT | ARRIVED | CANCELLED
+  bookings             Booking[]
+  tickets              Ticket[]
+  seatLocks            SeatLock[]
+  createdAt            DateTime   @default(now())
+}
+
+model Booking {
+  id               String    @id @default(uuid())
+  bookingReference String    @unique // e.g. BK-202610-7782
+  tripId           String
+  trip             Trip      @relation(fields: [tripId], references: [id])
+  customerName     String
+  customerPhone    String
+  customerEmail    String?
+  bookedByUserId   String?
+  bookedByUser     User?     @relation(fields: [bookedByUserId], references: [id])
+  bookedByRole     String    // PASSENGER | TICKET_AGENT | SUPER_ADMIN
+  branchId         String?
+  branch           Branch?   @relation(fields: [branchId], references: [id])
+  paymentMethod    String    // CASH | TELEBIRR | CBE_BIRR | AWASH_BIRR | CHAPA_GATEWAY
+  paymentStatus    String    // PENDING | COMPLETED | FAILED | REFUNDED
+  totalAmountETB   Float
+  tickets          Ticket[]
+  createdAt        DateTime  @default(now())
+}
+
+model Ticket {
+  id                String    @id @default(uuid())
+  ticketNumber      String    @unique // e.g. TKT-892401
+  bookingId         String
+  booking           Booking   @relation(fields: [bookingId], references: [id])
+  tripId            String
+  trip              Trip      @relation(fields: [tripId], references: [id])
+  seatNumber        String    // e.g. "4B"
+  passengerName     String
+  passengerPhone    String
+  passengerIdNumber String    // Kebele ID or National ID
+  status            String    @default("ISSUED") // ISSUED | BOARDED | NO_SHOW | CANCELLED
+  fareETB           Float
+  qrHash            String    @unique
+  boardedAt         DateTime?
+  boardingTerminal  String?
+  dropoffTerminal   String?
+  createdAt         DateTime  @default(now())
+}
+
+model SeatLock {
+  id              String   @id @default(uuid())
+  tripId          String
+  trip            Trip     @relation(fields: [tripId], references: [id])
+  seatNumber      String
+  lockedBySession String
+  expiresAt       DateTime
+  createdAt       DateTime @default(now())
+
+  @@unique([tripId, seatNumber])
+}
+
+model CashShift {
+  id                    String    @id @default(uuid())
+  agentId               String
+  agent                 User      @relation(fields: [agentId], references: [id])
+  branchId              String
+  branch                Branch    @relation(fields: [branchId], references: [id])
+  openedAt              DateTime  @default(now())
+  closedAt              DateTime?
+  openingCashETB        Float     @default(0)
+  cashSalesETB          Float     @default(0)
+  ticketsCount          Int       @default(0)
+  cancelledTicketsCount Int       @default(0)
+  refundsETB            Float     @default(0)
+  status                String    @default("OPEN") // OPEN | CLOSED
+  notes                 String?
+}

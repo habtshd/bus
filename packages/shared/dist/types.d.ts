@@ -1,0 +1,143 @@
+export type UserRole = 'SUPER_ADMIN' | 'BRANCH_MANAGER' | 'TICKET_AGENT' | 'DISPATCHER' | 'CONDUCTOR' | 'PASSENGER';
+export type BusType = 'LUXURY_2X2' | 'STANDARD_2X3';
+export type BusStatus = 'ACTIVE' | 'MAINTENANCE' | 'STANDBY' | 'OUT_OF_SERVICE';
+export type TripStatus = 'SCHEDULED' | 'BOARDING' | 'DEPARTED' | 'IN_TRANSIT' | 'ARRIVED' | 'CANCELLED' | 'DELAYED';
+export type SeatStatus = 'AVAILABLE' | 'SELECTED' | 'LOCKED' | 'BOOKED' | 'BLOCKED';
+export type PaymentMethod = 'CASH' | 'TELEBIRR' | 'CBE_BIRR' | 'AWASH_BIRR' | 'CHAPA_GATEWAY';
+export type PaymentStatus = 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
+export type TicketStatus = 'ISSUED' | 'BOARDED' | 'NO_SHOW' | 'CANCELLED';
+export interface Station {
+    id: string;
+    nameEn: string;
+    nameAm: string;
+    city: string;
+    terminalArea: string;
+    latitude?: number;
+    longitude?: number;
+}
+export interface Route {
+    id: string;
+    originStationId: string;
+    originStation?: Station;
+    destinationStationId: string;
+    destinationStation?: Station;
+    distanceKm: number;
+    estimatedDurationHours: number;
+    baseFareETB: number;
+    active: boolean;
+}
+export interface Bus {
+    id: string;
+    plateNumber: string;
+    sideNumber: string;
+    busModel: string;
+    busType: BusType;
+    totalSeats: number;
+    status: BusStatus;
+    amenities: string[];
+}
+export interface Seat {
+    id: string;
+    seatNumber: string;
+    row: number;
+    column: number;
+    columnLetter: string;
+    isAisle: boolean;
+    isWindow: boolean;
+    isBackRow: boolean;
+    status: SeatStatus;
+    priceETB: number;
+    passengerName?: string;
+    passengerPhone?: string;
+}
+export interface Trip {
+    id: string;
+    tripCode: string;
+    routeId: string;
+    route?: Route;
+    busId: string;
+    bus?: Bus;
+    driverName: string;
+    driverPhone: string;
+    conductorName: string;
+    conductorPhone: string;
+    departureTime: string;
+    estimatedArrivalTime: string;
+    fareETB: number;
+    status: TripStatus;
+    totalSeats: number;
+    availableSeatsCount: number;
+    bookedSeatsCount: number;
+}
+export interface Ticket {
+    id: string;
+    ticketNumber: string;
+    bookingId: string;
+    tripId: string;
+    seatNumber: string;
+    passengerName: string;
+    passengerPhone: string;
+    passengerIdNumber: string;
+    status: TicketStatus;
+    fareETB: number;
+    qrHash: string;
+    boardedAt?: string;
+    boardingTerminal?: string;
+    dropoffTerminal?: string;
+}
+export interface Booking {
+    id: string;
+    bookingReference: string;
+    tripId: string;
+    trip?: Trip;
+    bookedByUserId?: string;
+    bookedByRole: UserRole;
+    branchId?: string;
+    branchName?: string;
+    paymentMethod: PaymentMethod;
+    paymentStatus: PaymentStatus;
+    totalAmountETB: number;
+    tickets: Ticket[];
+    createdAt: string;
+    customerPhone: string;
+    customerEmail?: string;
+}
+export interface CheckpointManifestEntry {
+    seatNumber: string;
+    passengerName: string;
+    passengerPhone: string;
+    nationalIdNumber: string;
+    boardingPoint: string;
+    destination: string;
+    ticketNumber: string;
+    isBoarded: boolean;
+}
+export interface CheckpointManifest {
+    tripCode: string;
+    busPlateNumber: string;
+    busSideNumber: string;
+    driverName: string;
+    driverPhone: string;
+    conductorName: string;
+    route: string;
+    departureDate: string;
+    departureTime: string;
+    totalPassengers: number;
+    boardedCount: number;
+    entries: CheckpointManifestEntry[];
+}
+export interface CashDrawerSummary {
+    agentId: string;
+    agentName: string;
+    branchName: string;
+    shiftDate: string;
+    shiftOpenedAt: string;
+    shiftClosedAt?: string;
+    openingCashETB: number;
+    cashSalesETB: number;
+    ticketsCount: number;
+    cancelledTicketsCount: number;
+    refundsETB: number;
+    expectedDrawerCashETB: number;
+}
+//# sourceMappingURL=types.d.ts.map
