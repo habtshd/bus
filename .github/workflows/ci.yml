@@ -1,0 +1,47 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-checks:
+    name: Backend Build, Prisma Validation & Engine Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Monorepo Dependencies
+        run: npm ci
+
+      - name: Validate Prisma Schema
+        working-directory: apps/api
+        env:
+          DATABASE_URL: "postgresql://bus_admin:bus_secure_password_2026@localhost:5432/bus_platform_db?schema=public"
+        run: |
+          npx prisma format --check
+          npx prisma validate
+
+      - name: Generate Prisma Client
+        working-directory: apps/api
+        env:
+          DATABASE_URL: "postgresql://bus_admin:bus_secure_password_2026@localhost:5432/bus_platform_db?schema=public"
+        run: npx prisma generate
+
+      - name: Compile TypeScript
+        working-directory: apps/api
+        run: npx tsc --noEmit
+
+      - name: Run Trip & Inventory Engine Tests
+        working-directory: apps/api
+        run: npm run test:engine
