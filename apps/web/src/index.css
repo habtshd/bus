@@ -522,3 +522,209 @@ body {
     color: #000000;
   }
 }
+
+/* =========================================
+   PASSENGER PORTAL — PREMIUM ENHANCEMENTS
+   ========================================= */
+
+/* Stepper Progress Bar */
+.booking-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  background: var(--bg-card);
+  padding: 14px 24px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  overflow-x: auto;
+  gap: 12px;
+}
+
+[data-theme="light"] .booking-stepper {
+  background: #FFFFFF;
+  border-color: #E2E8F0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0.55;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  font-size: 0.85rem;
+  user-select: none;
+}
+
+.step-item.active {
+  opacity: 1;
+  font-weight: 700;
+  color: var(--ethiopia-gold);
+}
+
+.step-item.completed {
+  opacity: 0.9;
+  color: var(--ethiopia-green);
+}
+
+.step-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--nav-pill-bg);
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  border: 1px solid var(--border-subtle);
+  transition: all 0.2s ease;
+}
+
+.step-item.active .step-badge {
+  background: var(--ethiopia-gold);
+  color: #0B0F19;
+  border-color: var(--ethiopia-gold);
+  box-shadow: 0 0 12px var(--ethiopia-gold-glow);
+}
+
+.step-item.completed .step-badge {
+  background: var(--ethiopia-green);
+  color: #FFFFFF;
+  border-color: var(--ethiopia-green);
+}
+
+.step-divider {
+  flex: 1;
+  height: 2px;
+  background: var(--border-subtle);
+  min-width: 24px;
+}
+
+/* Corridor Highway Cards */
+.corridor-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.corridor-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--ethiopia-gold);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="light"] .corridor-card {
+  background: #FFFFFF;
+  border-color: #E2E8F0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .corridor-card:hover {
+  border-color: #D97706;
+  box-shadow: 0 12px 25px rgba(217, 119, 6, 0.12);
+}
+
+/* Departure Card */
+.departure-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.departure-card:hover {
+  border-color: var(--ethiopia-gold);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.departure-card.selected-card {
+  border: 2px solid var(--ethiopia-gold);
+  box-shadow: 0 0 25px var(--ethiopia-gold-glow);
+}
+
+[data-theme="light"] .departure-card {
+  background: #FFFFFF;
+  border-color: #E2E8F0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .departure-card:hover {
+  border-color: #D97706;
+  box-shadow: 0 8px 24px rgba(217, 119, 6, 0.1);
+}
+
+[data-theme="light"] .departure-card.selected-card {
+  border: 2px solid #D97706;
+  background: #FFFDF9;
+  box-shadow: 0 8px 24px rgba(217, 119, 6, 0.15);
+}
+
+/* Airline-Style Boarding Pass */
+.boarding-pass-card {
+  background: var(--bg-card);
+  border: 2px solid var(--ethiopia-green);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+}
+
+[data-theme="light"] .boarding-pass-card {
+  background: #FFFFFF;
+  border-color: #059669;
+  box-shadow: 0 15px 35px rgba(5, 150, 105, 0.12);
+}
+
+.boarding-pass-stub {
+  background: var(--nav-pill-bg);
+  border-top: 2px dashed var(--border-subtle);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+[data-theme="light"] .boarding-pass-stub {
+  background: #F8FAFC;
+  border-top-color: #CBD5E1;
+}
+
+/* Pulsing Live Beacon Indicator */
+.pulse-beacon {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ethiopia-green);
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulse-green 1.8s infinite;
+}
+
+@keyframes pulse-green {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}

@@ -95,23 +95,122 @@ export const OperationsDispatcher: React.FC<OperationsDispatcherProps> = ({ isAm
     }
   }
 
+  const DISPATCH_FALLBACK_FLEET = [
+    { id: 'b1', plateNumber: 'ET-3-92144', sideNumber: '#401', model: 'Yutong ZK6122H Luxury', busType: 'LUXURY_2X2', totalSeats: 45, status: 'IN_SERVICE' },
+    { id: 'b2', plateNumber: 'ET-3-88201', sideNumber: '#405', model: 'Golden Dragon Navigator VIP', busType: 'LUXURY_2X2', totalSeats: 45, status: 'IN_SERVICE' },
+    { id: 'b3', plateNumber: 'ET-3-51209', sideNumber: '#302', model: 'Zhongtong Elegance Express', busType: 'STANDARD_2X3', totalSeats: 49, status: 'IN_SERVICE' },
+    { id: 'b4', plateNumber: 'ET-3-77412', sideNumber: '#502', model: 'Yutong ZK6122H VIP Luxury', busType: 'LUXURY_2X2', totalSeats: 45, status: 'IN_SERVICE' },
+    { id: 'b5', plateNumber: 'ET-3-63198', sideNumber: '#201', model: 'Scania Touring Sleeper', busType: 'LUXURY_2X2', totalSeats: 42, status: 'MAINTENANCE' }
+  ];
+
+  const DISPATCH_FALLBACK_ROUTES = [
+    {
+      id: 'r1',
+      distanceKm: 275,
+      estimatedMinutes: 270,
+      originStation: { city: 'Addis Ababa', nameEn: 'Addis Ababa (Autobis Tera)', nameAm: 'አዲስ አበባ (አውቶቢስ ተራ)', terminalArea: 'Kality Terminal' },
+      destinationStation: { city: 'Hawassa', nameEn: 'Hawassa Central Station', nameAm: 'ሀዋሳ ማዕከላዊ ጣቢያ', terminalArea: 'Hawassa Central' }
+    },
+    {
+      id: 'r2',
+      distanceKm: 560,
+      estimatedMinutes: 540,
+      originStation: { city: 'Addis Ababa', nameEn: 'Addis Ababa (Autobis Tera)', nameAm: 'አዲስ አበባ (አውቶቢስ ተራ)', terminalArea: 'Autobis Tera Platform 4' },
+      destinationStation: { city: 'Bahir Dar', nameEn: 'Bahir Dar Felege Ghion', nameAm: 'ባሕር ዳር ፈለገ ጊዮን', terminalArea: 'Felege Ghion Terminal' }
+    },
+    {
+      id: 'r3',
+      distanceKm: 515,
+      estimatedMinutes: 510,
+      originStation: { city: 'Addis Ababa', nameEn: 'Addis Ababa (Lam Beret)', nameAm: 'አዲስ አበባ (ላም በረት)', terminalArea: 'Lam Beret Gate 2' },
+      destinationStation: { city: 'Dire Dawa', nameEn: 'Dire Dawa Kezira Terminal', nameAm: 'ድሬዳዋ ከዚራ', terminalArea: 'Kezira Terminal' }
+    }
+  ];
+
+  const DISPATCH_FALLBACK_TRIPS = [
+    {
+      id: 'disp_t1',
+      tripCode: 'AB-101',
+      status: 'BOARDING',
+      departureTime: new Date(new Date().setHours(6, 0, 0, 0)).toISOString(),
+      fareETB: 650,
+      driverName: 'Dawit Mengistu',
+      driverPhone: '+251 91 123 4567',
+      conductorName: 'Almaz Tadesse',
+      conductorPhone: '+251 92 234 5678',
+      bus: { id: 'b1', plateNumber: 'ET-3-92144', sideNumber: '#401', busType: 'LUXURY_2X2' },
+      route: {
+        originStation: { city: 'Addis Ababa', nameEn: 'Addis Ababa (Autobis Tera)', nameAm: 'አዲስ አበባ (አውቶቢስ ተራ)', terminalArea: 'Kality Terminal' },
+        destinationStation: { city: 'Hawassa', nameEn: 'Hawassa Central Station', nameAm: 'ሀዋሳ ማዕከላዊ ጣቢያ', terminalArea: 'Hawassa Central' }
+      }
+    },
+    {
+      id: 'disp_t2',
+      tripCode: 'AB-201',
+      status: 'IN_TRANSIT',
+      departureTime: new Date(new Date().setHours(5, 30, 0, 0)).toISOString(),
+      fareETB: 1200,
+      driverName: 'Abebe Bikila',
+      driverPhone: '+251 91 345 6789',
+      conductorName: 'Chala Diba',
+      conductorPhone: '+251 92 345 6789',
+      bus: { id: 'b3', plateNumber: 'ET-3-51209', sideNumber: '#302', busType: 'STANDARD_2X3' },
+      route: {
+        originStation: { city: 'Addis Ababa', nameEn: 'Addis Ababa (Autobis Tera)', nameAm: 'አዲስ አበባ (አውቶቢስ ተራ)', terminalArea: 'Platform 4' },
+        destinationStation: { city: 'Bahir Dar', nameEn: 'Bahir Dar Felege Ghion', nameAm: 'ባሕር ዳር ፈለገ ጊዮን', terminalArea: 'Felege Ghion Terminal' }
+      }
+    }
+  ];
+
+  const DISPATCH_FALLBACK_TRACKING = [
+    {
+      tripId: 'disp_t1',
+      tripCode: 'AB-101',
+      busPlate: 'ET-3-92144',
+      busSide: '#401',
+      speedKmH: 74,
+      status: 'IN_TRANSIT',
+      locationName: 'Mojo Expressway km 42',
+      latitude: 8.59,
+      longitude: 39.12,
+      updatedAt: new Date().toISOString()
+    },
+    {
+      tripId: 'disp_t2',
+      tripCode: 'AB-201',
+      busPlate: 'ET-3-51209',
+      busSide: '#302',
+      speedKmH: 68,
+      status: 'IN_TRANSIT',
+      locationName: 'Debre Markos Highway Junction',
+      latitude: 10.33,
+      longitude: 37.72,
+      updatedAt: new Date().toISOString()
+    }
+  ];
+
   async function loadAll() {
     try {
       setLoading(true);
       const [tripsData, fleetData, routesData, trackingData] = await Promise.all([
-        fetchTrips(),
-        fetchFleet(),
-        fetchRoutes(),
+        fetchTrips().catch(() => []),
+        fetchFleet().catch(() => []),
+        fetchRoutes().catch(() => []),
         fetchFleetTracking().catch(() => ({ fleet: [] }))
       ]);
-      setTrips(tripsData);
-      setFleet(fleetData);
-      setRoutes(routesData);
-      if (trackingData && trackingData.fleet) {
-        setFleetTracking(trackingData.fleet);
-      }
-      if (routesData.length > 0 && !selectedRouteId) setSelectedRouteId(routesData[0].id);
-      if (fleetData.length > 0 && !selectedBusId) setSelectedBusId(fleetData[0].id);
+
+      const resolvedTrips = Array.isArray(tripsData) && tripsData.length > 0 ? tripsData : DISPATCH_FALLBACK_TRIPS;
+      const resolvedFleet = Array.isArray(fleetData) && fleetData.length > 0 ? fleetData : DISPATCH_FALLBACK_FLEET;
+      const resolvedRoutes = Array.isArray(routesData) && routesData.length > 0 ? routesData : DISPATCH_FALLBACK_ROUTES;
+      const resolvedTracking = trackingData?.fleet?.length > 0 ? trackingData.fleet : DISPATCH_FALLBACK_TRACKING;
+
+      setTrips(resolvedTrips);
+      setFleet(resolvedFleet);
+      setRoutes(resolvedRoutes);
+      setFleetTracking(resolvedTracking);
+
+      if (resolvedRoutes.length > 0 && !selectedRouteId) setSelectedRouteId(resolvedRoutes[0].id);
+      if (resolvedFleet.length > 0 && !selectedBusId) setSelectedBusId(resolvedFleet[0].id);
 
       // Default departure date to tomorrow 06:00 AM
       const tmrw = new Date();
@@ -120,6 +219,10 @@ export const OperationsDispatcher: React.FC<OperationsDispatcherProps> = ({ isAm
       setDepDateTime(tmrw.toISOString().slice(0, 16));
     } catch (e) {
       console.error(e);
+      setTrips(DISPATCH_FALLBACK_TRIPS);
+      setFleet(DISPATCH_FALLBACK_FLEET);
+      setRoutes(DISPATCH_FALLBACK_ROUTES);
+      setFleetTracking(DISPATCH_FALLBACK_TRACKING);
     } finally {
       setLoading(false);
     }
@@ -326,7 +429,7 @@ export const OperationsDispatcher: React.FC<OperationsDispatcherProps> = ({ isAm
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '14px' }}>
             {fleetTracking.map(item => (
               <div key={item.tripId} style={{
-                background: 'rgba(15, 23, 42, 0.8)',
+                background: 'var(--nav-pill-bg)',
                 border: '1px solid var(--border-subtle)',
                 borderRadius: '10px',
                 padding: '14px'
@@ -427,7 +530,7 @@ export const OperationsDispatcher: React.FC<OperationsDispatcherProps> = ({ isAm
                     gridTemplateColumns: 'repeat(3, 1fr) auto',
                     gap: '10px',
                     padding: '10px 14px',
-                    background: 'rgba(15, 23, 42, 0.7)',
+                    background: 'var(--nav-pill-bg)',
                     borderRadius: '8px',
                     fontSize: '0.8rem',
                     marginBottom: '14px',

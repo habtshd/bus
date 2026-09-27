@@ -250,7 +250,7 @@ export const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ isAmha
               gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
               gap: '16px'
             }}>
-              <div style={{ background: 'rgba(15, 23, 42, 0.85)', padding: '18px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
+              <div style={{ background: 'var(--nav-pill-bg)', padding: '18px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Trips Today</div>
                 <div style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--text-gold)', marginTop: '4px' }}>
                   {today?.trips ?? 18}
@@ -260,7 +260,7 @@ export const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ isAmha
                 </div>
               </div>
 
-              <div style={{ background: 'rgba(15, 23, 42, 0.85)', padding: '18px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
+              <div style={{ background: 'var(--nav-pill-bg)', padding: '18px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Passengers</div>
                 <div style={{ fontSize: '2.2rem', fontWeight: 900, color: '#38BDF8', marginTop: '4px' }}>
                   {today?.passengers ?? 684}
@@ -270,7 +270,7 @@ export const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ isAmha
                 </div>
               </div>
 
-              <div style={{ background: 'rgba(15, 23, 42, 0.85)', padding: '18px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
+              <div style={{ background: 'var(--nav-pill-bg)', padding: '18px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Tickets Sold</div>
                 <div style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--ethiopia-green)', marginTop: '4px' }}>
                   {today?.ticketsSold ?? 684}
@@ -280,7 +280,7 @@ export const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ isAmha
                 </div>
               </div>
 
-              <div style={{ background: 'rgba(15, 23, 42, 0.85)', padding: '18px', borderRadius: '10px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+              <div style={{ background: 'var(--nav-pill-bg)', padding: '18px', borderRadius: '10px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-gold)', fontWeight: 600, textTransform: 'uppercase' }}>Revenue Today</div>
                 <div style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--text-gold)', marginTop: '4px' }}>
                   {(today?.revenueETB ?? 478800).toLocaleString()} <span style={{ fontSize: '1rem' }}>ETB</span>
@@ -290,7 +290,7 @@ export const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ isAmha
                 </div>
               </div>
 
-              <div style={{ background: 'rgba(15, 23, 42, 0.85)', padding: '18px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
+              <div style={{ background: 'var(--nav-pill-bg)', padding: '18px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Occupancy Rate</div>
                 <div style={{ fontSize: '2.2rem', fontWeight: 900, color: '#C084FC', marginTop: '4px' }}>
                   {today?.occupancyPercent ?? 86}%
@@ -300,7 +300,7 @@ export const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ isAmha
                 </div>
               </div>
 
-              <div style={{ background: 'rgba(15, 23, 42, 0.85)', padding: '18px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
+              <div style={{ background: 'var(--nav-pill-bg)', padding: '18px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Active Buses</div>
                 <div style={{ fontSize: '2.2rem', fontWeight: 900, color: '#FBBF24', marginTop: '4px' }}>
                   {today?.activeBuses ?? 14}
@@ -419,7 +419,7 @@ export const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ isAmha
               gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
               gap: '16px'
             }}>
-              <div style={{ background: 'rgba(15, 23, 42, 0.8)', padding: '18px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
+              <div style={{ background: 'var(--nav-pill-bg)', padding: '18px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>GROSS SALES TODAY</div>
                 <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--text-gold)', marginTop: '4px' }}>
                   {revenueReports?.executiveSummary?.totalGrossSalesETB.toLocaleString() ?? '478,800'} ETB
@@ -427,7 +427,7 @@ export const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ isAmha
                 <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>684 Tickets Issued</div>
               </div>
 
-              <div style={{ background: 'rgba(15, 23, 42, 0.8)', padding: '18px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
+              <div style={{ background: 'var(--nav-pill-bg)', padding: '18px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
                 <div style={{ fontSize: '0.75rem', color: '#F87171' }}>TOTAL REFUNDS ISSUED</div>
                 <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#F87171', marginTop: '4px' }}>
                   - {revenueReports?.executiveSummary?.totalRefundsETB.toLocaleString() ?? '9,350'} ETB
@@ -435,7 +435,7 @@ export const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ isAmha
                 <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>13 passenger cancellations</div>
               </div>
 
-              <div style={{ background: 'rgba(15, 23, 42, 0.8)', padding: '18px', borderRadius: '10px', border: '1px solid rgba(16, 185, 129, 0.4)' }}>
+              <div style={{ background: 'var(--nav-pill-bg)', padding: '18px', borderRadius: '10px', border: '1px solid rgba(16, 185, 129, 0.4)' }}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--ethiopia-green)' }}>NET SALES (NET REVENUE)</div>
                 <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--ethiopia-green)', marginTop: '4px' }}>
                   {revenueReports?.executiveSummary?.netSalesETB.toLocaleString() ?? '469,450'} ETB
@@ -443,7 +443,7 @@ export const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ isAmha
                 <div style={{ fontSize: '0.72rem', color: 'var(--ethiopia-green)' }}>Net Margin: 98.05%</div>
               </div>
 
-              <div style={{ background: 'rgba(15, 23, 42, 0.8)', padding: '18px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
+              <div style={{ background: 'var(--nav-pill-bg)', padding: '18px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-gold)' }}>CANCELLATION FEES RETAINED</div>
                 <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--text-gold)', marginTop: '4px' }}>
                   + 1,402.50 ETB

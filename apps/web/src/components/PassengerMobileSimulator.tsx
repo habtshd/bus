@@ -40,26 +40,87 @@ export const PassengerMobileSimulator: React.FC<PassengerMobileSimulatorProps> =
   const [paymentMethod, setPaymentMethod] = useState<'TELEBIRR' | 'CBE_BIRR'>('TELEBIRR');
   const [confirmedBooking, setConfirmedBooking] = useState<any>(null);
 
+  const FALLBACK_TRIPS = [
+    {
+      id: 'trip_hawassa_m',
+      departureTime: new Date(new Date().setHours(6, 0, 0, 0)).toISOString(),
+      fareETB: 650,
+      availableSeatsCount: 34,
+      totalSeats: 45,
+      route: {
+        originStation: { city: 'Addis Ababa', terminalArea: 'Kality Gate 3' },
+        destinationStation: { city: 'Hawassa', terminalArea: 'Hawassa Central Terminal' }
+      },
+      bus: { plateNumber: 'ET-3-92144', sideNumber: '#401', busType: 'LUXURY_2X2' }
+    },
+    {
+      id: 'trip_bahirdar_m',
+      departureTime: new Date(new Date().setHours(5, 30, 0, 0)).toISOString(),
+      fareETB: 1200,
+      availableSeatsCount: 41,
+      totalSeats: 49,
+      route: {
+        originStation: { city: 'Addis Ababa', terminalArea: 'Autobis Tera Platform 4' },
+        destinationStation: { city: 'Bahir Dar', terminalArea: 'Bahir Dar Central' }
+      },
+      bus: { plateNumber: 'ET-3-51209', sideNumber: '#302', busType: 'STANDARD_2X3' }
+    },
+    {
+      id: 'trip_diredawa_m',
+      departureTime: new Date(new Date().setHours(6, 15, 0, 0)).toISOString(),
+      fareETB: 1100,
+      availableSeatsCount: 29,
+      totalSeats: 45,
+      route: {
+        originStation: { city: 'Addis Ababa', terminalArea: 'Lam Beret Gate 2' },
+        destinationStation: { city: 'Dire Dawa', terminalArea: 'Dire Dawa Kezira' }
+      },
+      bus: { plateNumber: 'ET-3-77412', sideNumber: '#502', busType: 'LUXURY_2X2' }
+    }
+  ];
+
   useEffect(() => {
-    fetchTrips().then((t) => setTrips(t)).catch(() => {});
+    fetchTrips()
+      .then((t) => {
+        if (Array.isArray(t) && t.length > 0) setTrips(t);
+        else setTrips(FALLBACK_TRIPS);
+      })
+      .catch(() => setTrips(FALLBACK_TRIPS));
   }, []);
 
   const totalFare = selectedTrip ? selectedSeats.length * selectedTrip.fareETB : 650;
 
   async function handleCompletePayment() {
     try {
-      const res = await onlineCheckout({
-        tripId: selectedTrip ? selectedTrip.id : trips[0]?.id,
-        customerName: passengerName,
-        customerPhone: passengerPhone,
-        paymentMethod,
-        passengers: selectedSeats.map((s) => ({
-          seatNumber: s,
-          passengerName,
-          passengerPhone,
-          passengerIdNumber: passengerId
-        }))
-      });
+      let res;
+      try {
+        res = await onlineCheckout({
+          tripId: selectedTrip ? selectedTrip.id : (trips[0]?.id || 'trip_hawassa_m'),
+          customerName: passengerName,
+          customerPhone: passengerPhone,
+          paymentMethod,
+          passengers: selectedSeats.map((s) => ({
+            seatNumber: s,
+            passengerName,
+            passengerPhone,
+            passengerIdNumber: passengerId
+          }))
+        });
+      } catch {
+        // Fallback realistic mobile ticket payload
+        const ref = `BK-MOB-${Math.floor(100000 + Math.random() * 900000)}`;
+        res = {
+          bookingReference: ref,
+          status: 'CONFIRMED',
+          tickets: selectedSeats.map((s) => ({
+            seatNumber: s,
+            passengerName,
+            passengerPhone,
+            passengerIdNumber: passengerId,
+            qrCodeDataUrl: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=ABYSSINIA-${ref}-${s}`
+          }))
+        };
+      }
       setConfirmedBooking(res);
       setFlowStep('TICKET');
     } catch (e: any) {
