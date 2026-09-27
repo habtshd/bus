@@ -580,7 +580,7 @@ export const OperationsDispatcher: React.FC<OperationsDispatcherProps> = ({ isAm
                         {trip.occupancyPercent}% Occupancy
                       </span>
                     </div>
-                    <div style={{ height: '6px', background: '#1E293B', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div style={{ height: '6px', background: 'var(--border-subtle)', borderRadius: '3px', overflow: 'hidden' }}>
                       <div style={{
                         height: '100%',
                         width: `${trip.occupancyPercent}%`,

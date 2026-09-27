@@ -548,7 +548,9 @@ export const AgentCounterPOS: React.FC<AgentCounterPOSProps> = ({ isAmharic }) =
                 <div
                   key={p.id}
                   style={{
-                    background: '#1E293B',
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--border-subtle)',
+
                     padding: '8px 12px',
                     borderRadius: '6px',
                     fontSize: '0.8rem',

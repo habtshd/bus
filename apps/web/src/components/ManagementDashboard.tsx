@@ -327,7 +327,7 @@ export const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ isAmha
                     </span>
                     <span style={{ fontWeight: 700 }}>{(summary.counterSalesETB ?? 287280).toLocaleString()} ETB (60%)</span>
                   </div>
-                  <div style={{ height: '8px', background: '#1E293B', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div style={{ height: '8px', background: 'var(--border-subtle)', borderRadius: '4px', overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: '60%', background: 'var(--ethiopia-gold)', borderRadius: '4px' }}></div>
                   </div>
                 </div>
@@ -340,7 +340,8 @@ export const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ isAmha
                     </span>
                     <span style={{ fontWeight: 700 }}>{(summary.onlineSalesETB ?? 191520).toLocaleString()} ETB (40%)</span>
                   </div>
-                  <div style={{ height: '8px', background: '#1E293B', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div style={{ height: '8px', background: 'var(--border-subtle)', borderRadius: '4px', overflow: 'hidden' }}>
+
                     <div style={{ height: '100%', width: '40%', background: 'var(--ethiopia-green)', borderRadius: '4px' }}></div>
                   </div>
                 </div>
@@ -481,7 +482,7 @@ export const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ isAmha
                       <td style={{ padding: '10px', color: '#F87171' }}>-{d.refundsETB.toLocaleString()}</td>
                       <td style={{ padding: '10px', color: 'var(--ethiopia-green)', fontWeight: 800 }}>{d.netSalesETB.toLocaleString()}</td>
                       <td style={{ padding: '10px' }}>
-                        <div style={{ width: '80px', height: '6px', background: '#1E293B', borderRadius: '3px' }}>
+                        <div style={{ width: '80px', height: '6px', background: 'var(--border-subtle)', borderRadius: '3px' }}>
                           <div style={{ width: `${Math.min(100, Math.round((d.netSalesETB / 480000) * 100))}%`, height: '100%', background: 'var(--ethiopia-green)', borderRadius: '3px' }}></div>
                         </div>
                       </td>
