@@ -132,7 +132,7 @@ router.post('/release-seat', async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/bookings/counter-checkout (Branch Cash Sale: Transitions HELD/AVAILABLE -> PAID)
+// POST /api/bookings/counter-checkout (Branch Cash & Digital Sale: Transitions HELD/AVAILABLE -> PAID)
 router.post('/counter-checkout', async (req: AuthRequest, res: Response) => {
   try {
     const {
@@ -142,6 +142,8 @@ router.post('/counter-checkout', async (req: AuthRequest, res: Response) => {
       customerName,
       customerPhone,
       passengers, // Array of { seatNumber, passengerName, passengerPhone, passengerIdNumber }
+      paymentMethod = 'CASH',
+      transactionReference,
       cashTenderedETB
     } = req.body;
 
@@ -168,7 +170,9 @@ router.post('/counter-checkout', async (req: AuthRequest, res: Response) => {
 
     const seatNumbers = passengers.map((p: any) => p.seatNumber);
     const totalAmountETB = trip.fareETB * passengers.length;
-    const changeETB = cashTenderedETB ? Math.max(0, Number(cashTenderedETB) - totalAmountETB) : 0;
+    const changeETB = (paymentMethod === 'CASH' && cashTenderedETB)
+      ? Math.max(0, Number(cashTenderedETB) - totalAmountETB)
+      : 0;
     const bookingReference = `BK-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`;
 
     // Execute atomic checkout transaction
@@ -209,10 +213,42 @@ router.post('/counter-checkout', async (req: AuthRequest, res: Response) => {
         data: {
           bookingId: booking.id,
           amountETB: totalAmountETB,
-          paymentMethod: 'CASH',
-          cashTenderedETB: Number(cashTenderedETB) || totalAmountETB,
-          changeReturnedETB: changeETB,
+          paymentMethod: paymentMethod || 'CASH',
+          transactionReference: transactionReference || undefined,
+          cashTenderedETB: paymentMethod === 'CASH' ? (Number(cashTenderedETB) || totalAmountETB) : undefined,
+          changeReturnedETB: paymentMethod === 'CASH' ? changeETB : 0,
           status: 'COMPLETED'
+        }
+      });
+
+      // 3b. Update open CashShift if cash payment
+      if (paymentMethod === 'CASH') {
+        const actingAgentId = agentId || req.user?.userId;
+        if (actingAgentId) {
+          await tx.cashShift.updateMany({
+            where: { agentId: actingAgentId, status: 'OPEN' },
+            data: {
+              cashSalesETB: { increment: totalAmountETB },
+              ticketsCount: { increment: passengers.length }
+            }
+          });
+        }
+      }
+
+      // 3c. Audit Log
+      await tx.auditLog.create({
+        data: {
+          userId: agentId || req.user?.userId,
+          action: 'COUNTER_SALE',
+          entityName: 'Booking',
+          entityId: booking.id,
+          detailsJson: JSON.stringify({
+            bookingReference,
+            totalAmountETB,
+            seats: seatNumbers,
+            paymentMethod,
+            ticketsCount: passengers.length
+          })
         }
       });
 
@@ -559,6 +595,399 @@ router.post('/:reference/cancel', async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error('Cancellation error:', err);
     return res.status(500).json({ error: 'Failed to cancel booking' });
+  }
+});
+
+// GET /api/bookings/search (Day 13 & 15: Fast multi-field search)
+router.get('/search', async (req: Request, res: Response) => {
+  try {
+    const q = String(req.query.q || '').trim();
+    if (!q) {
+      return res.json({ bookings: [] });
+    }
+
+    const bookings = await prisma.booking.findMany({
+      where: {
+        OR: [
+          { bookingReference: { contains: q } },
+          { customerPhone: { contains: q } },
+          { customerName: { contains: q } },
+          { tickets: { some: { ticketNumber: { contains: q } } } },
+          { tickets: { some: { passengerName: { contains: q } } } },
+          { tickets: { some: { passengerIdNumber: { contains: q } } } }
+        ]
+      },
+      include: {
+        trip: {
+          include: {
+            route: {
+              include: {
+                originStation: true,
+                destinationStation: true
+              }
+            },
+            bus: true
+          }
+        },
+        tickets: true,
+        branch: true
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 20
+    });
+
+    const enriched = await Promise.all(
+      bookings.map(async (b) => {
+        const ticketsWithQR = await Promise.all(
+          b.tickets.map(async (t) => {
+            const qrPayload = JSON.stringify({
+              tkt: t.ticketNumber,
+              trip: b.trip.tripCode,
+              seat: t.seatNumber,
+              name: t.passengerName
+            });
+            const qrCodeDataUrl = await QRCode.toDataURL(qrPayload, { margin: 1, width: 180 });
+            return { ...t, qrCodeDataUrl };
+          })
+        );
+        return { ...b, tickets: ticketsWithQR };
+      })
+    );
+
+    return res.json({ bookings: enriched });
+  } catch (err: any) {
+    console.error('Bookings search error:', err);
+    return res.status(500).json({ error: 'Failed to search bookings' });
+  }
+});
+
+// POST /api/bookings/reschedule (Day 15: Trip transfer & Seat re-selection)
+router.post('/reschedule', async (req: Request, res: Response) => {
+  try {
+    const { bookingReference, ticketNumber, newTripId, newSeatNumber, agentId, changeReason } = req.body;
+
+    if (!bookingReference || !ticketNumber || !newTripId || !newSeatNumber) {
+      return res.status(400).json({ error: 'Missing bookingReference, ticketNumber, newTripId, or newSeatNumber' });
+    }
+
+    const booking = await prisma.booking.findUnique({
+      where: { bookingReference },
+      include: {
+        tickets: true,
+        trip: {
+          include: { route: true }
+        }
+      }
+    });
+
+    if (!booking) {
+      return res.status(404).json({ error: 'Original booking not found' });
+    }
+
+    const ticketToMove = booking.tickets.find((t) => t.ticketNumber === ticketNumber);
+    if (!ticketToMove) {
+      return res.status(404).json({ error: `Ticket ${ticketNumber} not found in booking ${bookingReference}` });
+    }
+
+    if (ticketToMove.status === 'BOARDED') {
+      return res.status(400).json({ error: 'Cannot reschedule an already BOARDED passenger ticket.' });
+    }
+
+    const newTrip = await prisma.trip.findUnique({
+      where: { id: newTripId },
+      include: {
+        bus: true,
+        route: {
+          include: {
+            originStation: true,
+            destinationStation: true
+          }
+        }
+      }
+    });
+
+    if (!newTrip) {
+      return res.status(404).json({ error: 'Target trip not found' });
+    }
+
+    // Atomic transaction for rescheduling
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Verify seat availability on new trip
+      const existingPaid = await tx.ticket.findFirst({
+        where: {
+          tripId: newTripId,
+          seatNumber: newSeatNumber,
+          status: { not: 'CANCELLED' }
+        }
+      });
+      if (existingPaid) {
+        throw { status: 409, message: `Seat ${newSeatNumber} on trip ${newTrip.tripCode} is already booked.` };
+      }
+
+      const activeLock = await tx.seatLock.findFirst({
+        where: {
+          tripId: newTripId,
+          seatNumber: newSeatNumber,
+          expiresAt: { gte: new Date() }
+        }
+      });
+      if (activeLock) {
+        throw { status: 409, message: `Seat ${newSeatNumber} on trip ${newTrip.tripCode} is temporarily held.` };
+      }
+
+      // 2. Mark old ticket as CANCELLED (releasing old seat back to AVAILABLE)
+      await tx.ticket.update({
+        where: { id: ticketToMove.id },
+        data: { status: 'CANCELLED' }
+      });
+
+      // 3. Calculate fare difference
+      const fareDiffETB = newTrip.fareETB - ticketToMove.fareETB;
+
+      // 4. Issue new Ticket on the new trip
+      const newTicketNumber = `TKT-${Math.floor(100000 + Math.random() * 900000)}`;
+      const qrPayload = JSON.stringify({
+        tkt: newTicketNumber,
+        trip: newTrip.tripCode,
+        seat: newSeatNumber,
+        name: ticketToMove.passengerName,
+        id: ticketToMove.passengerIdNumber
+      });
+      const qrHash = crypto.createHash('sha256').update(qrPayload).digest('hex');
+
+      const newTicket = await tx.ticket.create({
+        data: {
+          ticketNumber: newTicketNumber,
+          bookingId: booking.id,
+          bookingPassengerId: ticketToMove.bookingPassengerId,
+          tripId: newTripId,
+          seatNumber: newSeatNumber,
+          passengerName: ticketToMove.passengerName,
+          passengerPhone: ticketToMove.passengerPhone,
+          passengerIdNumber: ticketToMove.passengerIdNumber,
+          fareETB: newTrip.fareETB,
+          status: 'ISSUED',
+          qrHash,
+          boardingTerminal: newTrip.route.originStation.nameEn,
+          dropoffTerminal: newTrip.route.destinationStation.nameEn
+        }
+      });
+
+      // 5. Update booking with new trip and fare adjustment if appropriate
+      await tx.booking.update({
+        where: { id: booking.id },
+        data: {
+          tripId: newTripId,
+          totalAmountETB: { increment: Math.max(0, fareDiffETB) }
+        }
+      });
+
+      // 6. Audit Trail
+      await tx.auditLog.create({
+        data: {
+          userId: agentId,
+          action: 'TICKET_RESCHEDULE',
+          entityName: 'Ticket',
+          entityId: newTicket.id,
+          detailsJson: JSON.stringify({
+            bookingReference,
+            oldTicketNumber: ticketToMove.ticketNumber,
+            oldSeat: ticketToMove.seatNumber,
+            newTicketNumber,
+            newSeat: newSeatNumber,
+            newTripCode: newTrip.tripCode,
+            fareDiffETB,
+            reason: changeReason || 'Customer requested travel date/time modification'
+          })
+        }
+      });
+
+      return { newTicket, qrPayload, fareDiffETB };
+    });
+
+    const qrCodeDataUrl = await QRCode.toDataURL(result.qrPayload, { margin: 1, width: 220 });
+
+    return res.json({
+      success: true,
+      message: `Ticket successfully rescheduled from Seat ${ticketToMove.seatNumber} to Seat ${newSeatNumber} on trip ${newTrip.tripCode}.`,
+      oldTicketNumber: ticketToMove.ticketNumber,
+      newTicket: {
+        ...result.newTicket,
+        qrCodeDataUrl
+      },
+      fareDiffETB: result.fareDiffETB,
+      newTrip: {
+        tripCode: newTrip.tripCode,
+        route: `${newTrip.route.originStation.nameEn} ➔ ${newTrip.route.destinationStation.nameEn}`,
+        departureTime: newTrip.departureTime,
+        busPlate: newTrip.bus.plateNumber
+      }
+    });
+  } catch (err: any) {
+    if (err.status === 409) {
+      return res.status(409).json({ error: err.message });
+    }
+    console.error('Reschedule error:', err);
+    return res.status(500).json({ error: err.message || 'Failed to reschedule ticket' });
+  }
+});
+
+// POST /api/bookings/:reference/refund (Day 15: Structured refund policy & cash drawer adjustment)
+router.post('/:reference/refund', async (req: Request, res: Response) => {
+  try {
+    const { reference } = req.params;
+    const {
+      reason = 'Customer Request',
+      refundPercentage = 80, // Default 80% (20% administrative deduction)
+      deductionFeeETB = 0,
+      agentId,
+      notes
+    } = req.body;
+
+    const booking = await prisma.booking.findUnique({
+      where: { bookingReference: reference },
+      include: {
+        tickets: true,
+        trip: {
+          include: {
+            route: { include: { originStation: true, destinationStation: true } }
+          }
+        },
+        payments: true
+      }
+    });
+
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+
+    if (booking.paymentStatus === 'REFUNDED') {
+      return res.status(400).json({ error: 'This booking has already been refunded.' });
+    }
+
+    const originalAmountETB = booking.totalAmountETB;
+    const calculatedRefundETB = Math.max(
+      0,
+      (originalAmountETB * (Number(refundPercentage) / 100)) - Number(deductionFeeETB)
+    );
+    const adminFeeETB = originalAmountETB - calculatedRefundETB;
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Mark tickets CANCELLED (releases seats back to AVAILABLE)
+      await tx.ticket.updateMany({
+        where: { bookingId: booking.id },
+        data: { status: 'CANCELLED' }
+      });
+
+      // 2. Mark booking REFUNDED
+      await tx.booking.update({
+        where: { id: booking.id },
+        data: { paymentStatus: 'REFUNDED' }
+      });
+
+      // 3. Delete any remnant locks
+      const seatNumbers = booking.tickets.map((t) => t.seatNumber);
+      await tx.seatLock.deleteMany({
+        where: {
+          tripId: booking.tripId,
+          seatNumber: { in: seatNumbers }
+        }
+      });
+
+      // 4. Record refund payment transaction
+      await tx.payment.create({
+        data: {
+          bookingId: booking.id,
+          amountETB: -calculatedRefundETB,
+          paymentMethod: booking.payments[0]?.paymentMethod || 'CASH',
+          status: 'REFUNDED'
+        }
+      });
+
+      // 5. Update agent cash shift if cash refund
+      if (agentId) {
+        await tx.cashShift.updateMany({
+          where: { agentId, status: 'OPEN' },
+          data: {
+            refundsETB: { increment: calculatedRefundETB },
+            cancelledTicketsCount: { increment: booking.tickets.length }
+          }
+        });
+      }
+
+      // 6. Audit Trail
+      await tx.auditLog.create({
+        data: {
+          userId: agentId,
+          action: 'TICKET_REFUND',
+          entityName: 'Booking',
+          entityId: booking.id,
+          detailsJson: JSON.stringify({
+            bookingReference: reference,
+            originalAmountETB,
+            calculatedRefundETB,
+            adminFeeETB,
+            refundPercentage,
+            reason,
+            notes
+          })
+        }
+      });
+    });
+
+    return res.json({
+      success: true,
+      status: 'REFUNDED',
+      bookingReference: reference,
+      originalAmountETB,
+      refundAmountETB: calculatedRefundETB,
+      adminFeeETB,
+      refundPercentage,
+      releasedSeats: booking.tickets.map((t) => t.seatNumber),
+      reason,
+      receiptNumber: `RFD-${Date.now().toString().slice(-6)}`,
+      processedAt: new Date().toISOString()
+    });
+  } catch (err: any) {
+    console.error('Refund error:', err);
+    return res.status(500).json({ error: err.message || 'Failed to process refund' });
+  }
+});
+
+// POST /api/bookings/send-sms (Day 18: Simulated SMS / Email confirmation dispatch)
+router.post('/send-sms', async (req: Request, res: Response) => {
+  try {
+    const { phone, bookingReference, passengerName, tripCode, route, departureTime, seatNumber } = req.body;
+    if (!phone || !bookingReference) {
+      return res.status(400).json({ error: 'Missing phone or bookingReference' });
+    }
+
+    const message = `[Abyssinia Bus S.C.] Amesegenalehu ${passengerName || 'Passenger'}! Booking ${bookingReference} confirmed. Seat(s): ${seatNumber}, Trip: ${tripCode} (${route}). Departs: ${departureTime}. Show QR ticket at gate. 24/7 Hotline: 9444.`;
+
+    const notification = await prisma.notification.create({
+      data: {
+        recipientPhone: phone,
+        channel: 'SMS',
+        message,
+        status: 'SENT',
+        providerResponse: JSON.stringify({
+          messageId: `eth-sms-${Date.now()}`,
+          carrier: 'Ethio Telecom SMS Gateway',
+          status: 'DELIVERED'
+        })
+      }
+    });
+
+    return res.json({
+      success: true,
+      notificationId: notification.id,
+      recipientPhone: phone,
+      message,
+      deliveredAt: notification.sentAt
+    });
+  } catch (err: any) {
+    console.error('SMS notification error:', err);
+    return res.status(500).json({ error: 'Failed to send SMS notification' });
   }
 });
 

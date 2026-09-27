@@ -23,16 +23,47 @@ export const MyBookingsView: React.FC<MyBookingsViewProps> = ({ isAmharic }) => 
       setErrorMsg('');
       setFoundBooking(null);
 
-      const res = await fetch(`http://localhost:4000/api/bookings/${query.trim()}`);
-      if (!res.ok) {
-        throw new Error('No booking found with this reference code.');
+      // 1. Try direct reference lookup
+      let res = await fetch(`http://localhost:4000/api/bookings/${encodeURIComponent(query.trim())}`);
+      if (res.ok) {
+        const data = await res.json();
+        setFoundBooking(data);
+        return;
       }
-      const data = await res.json();
-      setFoundBooking(data);
+
+      // 2. Try multi-field search by phone, ticket #, or name
+      const searchRes = await fetch(`http://localhost:4000/api/bookings/search?q=${encodeURIComponent(query.trim())}`);
+      if (searchRes.ok) {
+        const sData = await searchRes.json();
+        if (sData.bookings && sData.bookings.length > 0) {
+          setFoundBooking(sData.bookings[0]);
+          return;
+        }
+      }
+
+      throw new Error('No booking found matching reference code, phone number, or ticket number.');
     } catch (err: any) {
       setErrorMsg(err.message || 'Booking not found');
     } finally {
       setSearching(false);
+    }
+  }
+
+  async function handleCancelSelfService() {
+    if (!foundBooking) return;
+    if (!confirm(`Are you sure you want to cancel booking ${foundBooking.bookingReference}? Released seats will be made available for other passengers.`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`http://localhost:4000/api/bookings/${foundBooking.bookingReference}/cancel`, {
+        method: 'POST'
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to cancel booking');
+      alert(`Booking ${foundBooking.bookingReference} has been cancelled.`);
+      handleSearch(foundBooking.bookingReference);
+    } catch (err: any) {
+      alert(err.message || 'Cancellation failed');
     }
   }
 
@@ -165,8 +196,19 @@ export const MyBookingsView: React.FC<MyBookingsViewProps> = ({ isAmharic }) => 
               <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--text-gold)' }}>
                 {foundBooking.totalAmountETB} ETB
               </div>
-              <div className="badge badge-green" style={{ fontSize: '0.75rem' }}>
-                PAID via {foundBooking.paymentMethod}
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', alignItems: 'center', marginTop: '4px' }}>
+                <span className={`badge ${foundBooking.paymentStatus === 'REFUNDED' ? 'badge-red' : 'badge-green'}`} style={{ fontSize: '0.75rem' }}>
+                  {foundBooking.paymentStatus === 'REFUNDED' ? 'CANCELLED / REFUNDED' : `PAID via ${foundBooking.paymentMethod || 'Online'}`}
+                </span>
+                {foundBooking.paymentStatus !== 'REFUNDED' && (
+                  <button
+                    onClick={handleCancelSelfService}
+                    className="btn btn-secondary"
+                    style={{ padding: '4px 10px', fontSize: '0.72rem', border: '1px solid #F87171', color: '#FCA5A5' }}
+                  >
+                    Cancel Booking
+                  </button>
+                )}
               </div>
             </div>
           </div>

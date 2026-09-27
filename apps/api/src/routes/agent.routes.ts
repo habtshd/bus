@@ -95,4 +95,102 @@ router.post('/open-shift', requireAuth, async (req: AuthRequest, res: Response) 
   }
 });
 
+// POST /api/agent/close-shift (Day 14: Daily shift reconciliation & drawer count)
+router.post('/close-shift', async (req: Request, res: Response) => {
+  try {
+    const { agentId, actualCashCountedETB = 0, notes } = req.body;
+
+    const currentShift = await prisma.cashShift.findFirst({
+      where: {
+        ...(agentId ? { agentId } : {}),
+        status: 'OPEN'
+      },
+      include: { agent: true, branch: true },
+      orderBy: { openedAt: 'desc' }
+    });
+
+    if (!currentShift) {
+      return res.status(400).json({ error: 'No active open shift found to close.' });
+    }
+
+    const expectedCashETB = currentShift.openingCashETB + currentShift.cashSalesETB - currentShift.refundsETB;
+    const discrepancyETB = Number(actualCashCountedETB) - expectedCashETB;
+
+    const closedShift = await prisma.cashShift.update({
+      where: { id: currentShift.id },
+      data: {
+        status: 'CLOSED',
+        closedAt: new Date(),
+        notes: `${currentShift.notes ? currentShift.notes + ' | ' : ''}Closing Count: ${actualCashCountedETB} ETB, Diff: ${discrepancyETB >= 0 ? '+' : ''}${discrepancyETB} ETB. ${notes || ''}`
+      }
+    });
+
+    return res.json({
+      success: true,
+      message: 'Cash shift successfully closed and reconciled.',
+      shift: closedShift,
+      reconciliation: {
+        openingCashETB: currentShift.openingCashETB,
+        cashSalesETB: currentShift.cashSalesETB,
+        refundsETB: currentShift.refundsETB,
+        expectedCashETB,
+        actualCashCountedETB: Number(actualCashCountedETB),
+        discrepancyETB,
+        status: discrepancyETB === 0 ? 'BALANCED' : discrepancyETB > 0 ? 'OVERAGE' : 'SHORTAGE'
+      }
+    });
+  } catch (err: any) {
+    console.error('Close shift error:', err);
+    return res.status(500).json({ error: 'Failed to close shift' });
+  }
+});
+
+// GET /api/agent/passengers/search (Day 13: Search passenger registry & travel history)
+router.get('/passengers/search', async (req: Request, res: Response) => {
+  try {
+    const q = String(req.query.q || '').trim();
+    if (!q) {
+      return res.json({ passengers: [] });
+    }
+
+    const passengers = await prisma.passenger.findMany({
+      where: {
+        OR: [
+          { fullName: { contains: q } },
+          { phone: { contains: q } },
+          { nationalIdNumber: { contains: q } }
+        ]
+      },
+      include: {
+        bookingPassengers: {
+          include: {
+            ticket: {
+              include: {
+                trip: {
+                  include: {
+                    route: {
+                      include: {
+                        originStation: true,
+                        destinationStation: true
+                      }
+                    },
+                    bus: true
+                  }
+                }
+              }
+            }
+          },
+          take: 5
+        }
+      },
+      take: 20
+    });
+
+    return res.json({ passengers });
+  } catch (err: any) {
+    console.error('Passenger search error:', err);
+    return res.status(500).json({ error: 'Failed to search passengers' });
+  }
+});
+
 export default router;

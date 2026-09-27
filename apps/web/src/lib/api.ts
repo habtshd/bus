@@ -151,3 +151,104 @@ export async function loginUser(email: string, password: string) {
   }
   return res.json();
 }
+
+export async function searchBookings(q: string) {
+  const res = await fetch(`${API_BASE}/bookings/search?q=${encodeURIComponent(q)}`);
+  if (!res.ok) throw new Error('Failed to search bookings');
+  return res.json();
+}
+
+export async function searchPassengers(q: string) {
+  const res = await fetch(`${API_BASE}/agent/passengers/search?q=${encodeURIComponent(q)}`);
+  if (!res.ok) throw new Error('Failed to search passengers');
+  return res.json();
+}
+
+export async function rescheduleTicket(payload: {
+  bookingReference: string;
+  ticketNumber: string;
+  newTripId: string;
+  newSeatNumber: string;
+  agentId?: string;
+  changeReason?: string;
+}) {
+  const res = await fetch(`${API_BASE}/bookings/reschedule`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Failed to reschedule ticket');
+  }
+  return res.json();
+}
+
+export async function refundBooking(
+  reference: string,
+  payload: {
+    reason?: string;
+    refundPercentage?: number;
+    deductionFeeETB?: number;
+    agentId?: string;
+    notes?: string;
+  }
+) {
+  const res = await fetch(`${API_BASE}/bookings/${reference}/refund`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Failed to process refund');
+  }
+  return res.json();
+}
+
+export async function sendTicketSms(payload: {
+  phone: string;
+  bookingReference: string;
+  passengerName?: string;
+  tripCode: string;
+  route: string;
+  departureTime: string;
+  seatNumber: string;
+}) {
+  const res = await fetch(`${API_BASE}/bookings/send-sms`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Failed to send SMS');
+  }
+  return res.json();
+}
+
+export async function getShiftSummary(token?: string) {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(`${API_BASE}/agent/shift-summary`, { headers });
+  if (!res.ok) return { hasOpenShift: false };
+  return res.json();
+}
+
+export async function closeShift(payload: {
+  agentId?: string;
+  actualCashCountedETB: number;
+  notes?: string;
+}) {
+  const res = await fetch(`${API_BASE}/agent/close-shift`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Failed to close shift');
+  }
+  return res.json();
+}
+
