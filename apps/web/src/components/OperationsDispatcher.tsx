@@ -10,6 +10,7 @@ import {
   fetchFleetTracking,
   assignTripCrew
 } from '../lib/api';
+import { EthiopiaLiveFleetMap } from './EthiopiaLiveFleetMap';
 import {
   Radio,
   Plus,
@@ -352,6 +353,11 @@ export const OperationsDispatcher: React.FC<OperationsDispatcherProps> = ({ isAm
     }
   }
 
+  function handleMapDelayTrip(tripCode: string) {
+    const trip = trips.find(t => t.tripCode === tripCode) || { tripCode, id: tripCode };
+    openDelayModal(trip);
+  }
+
   return (
     <div style={{ padding: '24px', maxWidth: '1440px', margin: '0 auto' }}>
       {/* Header with Dispatch Toolbar */}
@@ -384,6 +390,12 @@ export const OperationsDispatcher: React.FC<OperationsDispatcherProps> = ({ isAm
           </button>
         </div>
       </div>
+
+      {/* Interactive Geographic Ethiopia Corridor Route Map */}
+      <EthiopiaLiveFleetMap
+        onDelayTrip={handleMapDelayTrip}
+        isAmharic={isAmharic}
+      />
 
       {/* Day 23 Live Fleet GPS Telemetry Monitoring Panel */}
       <div className="glass-panel" style={{ padding: '20px', marginBottom: '24px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
