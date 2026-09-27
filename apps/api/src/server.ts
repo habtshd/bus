@@ -12,6 +12,7 @@ import analyticsRoutes from './routes/analytics.routes';
 import agentRoutes from './routes/agent.routes';
 import driverRoutes from './routes/driver.routes';
 import trackingRoutes from './routes/tracking.routes';
+import securityRoutes from './routes/security.routes';
 
 dotenv.config();
 
@@ -38,6 +39,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/agent', agentRoutes);
 app.use('/api/driver', driverRoutes);
 app.use('/api/tracking', trackingRoutes);
+app.use('/api/security', securityRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

@@ -303,4 +303,55 @@ export async function assignTripCrew(tripId: string, payload: {
   return res.json();
 }
 
+export async function fetchRevenueReports() {
+  const res = await fetch(`${API_BASE}/analytics/revenue-reports`);
+  if (!res.ok) throw new Error('Failed to fetch revenue reports');
+  return res.json();
+}
+
+export async function fetchSecurityPermissions() {
+  const res = await fetch(`${API_BASE}/security/permissions`);
+  if (!res.ok) throw new Error('Failed to fetch security permissions');
+  return res.json();
+}
+
+export async function fetchAuditTrail(action?: string) {
+  const url = action ? `${API_BASE}/security/audit-trail?action=${action}` : `${API_BASE}/security/audit-trail`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Failed to fetch audit trail');
+  return res.json();
+}
+
+export async function fetchLoginHistory() {
+  const res = await fetch(`${API_BASE}/security/login-history`);
+  if (!res.ok) throw new Error('Failed to fetch login history');
+  return res.json();
+}
+
+export async function fetchBookingChangeHistory() {
+  const res = await fetch(`${API_BASE}/security/booking-change-history`);
+  if (!res.ok) throw new Error('Failed to fetch booking change history');
+  return res.json();
+}
+
+export async function changePassengerSeat(payload: {
+  bookingReference: string;
+  ticketNumber: string;
+  newSeatNumber: string;
+  agentName?: string;
+  reason?: string;
+}) {
+  const res = await fetch(`${API_BASE}/security/change-seat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Failed to change passenger seat');
+  }
+  return res.json();
+}
+
+
 
