@@ -18,8 +18,18 @@ export class AuthService {
   constructor(private readonly prisma: PrismaService) {}
 
   async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email.toLowerCase().trim() },
+    const searchTarget = (dto.login || dto.email || dto.phone || '').trim();
+    if (!searchTarget) {
+      throw new BadRequestException('Please provide an email or phone number');
+    }
+
+    const user = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: searchTarget.toLowerCase() },
+          { phone: searchTarget },
+        ],
+      },
       include: {
         branch: {
           include: { company: true },
@@ -41,20 +51,24 @@ export class AuthService {
       email: user.email,
       fullName: user.fullName,
       role: user.role,
+      roles: [user.role],
       branchId: user.branchId,
       companyId: user.branch?.companyId || null,
     };
 
-    const accessToken = jwt.sign(payload, this.jwtSecret, { expiresIn: '7d' });
+    const accessToken = jwt.sign(payload, this.jwtSecret, { expiresIn: '15m' });
+    const refreshToken = jwt.sign({ userId: user.id }, this.jwtSecret, { expiresIn: '30d' });
 
     return {
       accessToken,
+      refreshToken,
       user: {
         id: user.id,
         email: user.email,
         fullName: user.fullName,
         phone: user.phone,
         role: user.role,
+        roles: [user.role],
         branchId: user.branchId,
         branchName: user.branch?.nameEn,
         companyId: user.branch?.companyId,

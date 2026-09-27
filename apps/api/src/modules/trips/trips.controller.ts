@@ -26,6 +26,18 @@ export class TripsController {
     return this.tripsService.getAllTrips(companyId);
   }
 
+  // GET /api/v1/trips/search?from=ADD&to=BD&date=2026-10-05
+  @Get('search')
+  searchTrips(
+    @Query('from') from: string,
+    @Query('to') to: string,
+    @Query('date') date: string,
+    @Req() req: any,
+  ) {
+    const companyId = req.user?.companyId || req.headers?.['x-company-id'];
+    return this.tripsService.searchTrips(from, to, date, companyId);
+  }
+
   @Get(':tripId')
   getTripById(@Param('tripId') tripId: string) {
     return this.tripsService.getTripById(tripId);

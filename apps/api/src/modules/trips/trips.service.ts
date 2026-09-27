@@ -278,4 +278,143 @@ export class TripsService {
 
     return trip;
   }
+
+  async searchTrips(from?: string, to?: string, date?: string, companyId?: string) {
+    let dateFilter: any = undefined;
+    if (date) {
+      const d = new Date(date);
+      const startOfDay = new Date(d);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(d);
+      endOfDay.setHours(23, 59, 59, 999);
+      dateFilter = {
+        gte: startOfDay,
+        lte: endOfDay,
+      };
+    }
+
+    const trips = await this.prisma.trip.findMany({
+      where: {
+        companyId: companyId || undefined,
+        scheduledDeparture: dateFilter,
+        status: { notIn: ['CANCELLED', 'COMPLETED'] },
+      },
+      include: {
+        route: {
+          include: {
+            originStop: true,
+            destinationStop: true,
+            routeStops: {
+              orderBy: { sequenceNumber: 'asc' },
+              include: { stop: true },
+            },
+          },
+        },
+        bus: {
+          include: { seats: true },
+        },
+        tripSegments: {
+          orderBy: { sequenceNumber: 'asc' },
+          include: {
+            fromStop: true,
+            toStop: true,
+            seats: true,
+          },
+        },
+      },
+      orderBy: { scheduledDeparture: 'asc' },
+    });
+
+    const results = [];
+    for (const trip of trips) {
+      let isMatch = true;
+      let fromIdx = -1;
+      let toIdx = -1;
+
+      if (from || to) {
+        fromIdx = trip.tripSegments.findIndex((seg) => {
+          if (!from) return true;
+          const target = from.toUpperCase().trim();
+          return (
+            seg.fromStopId === from ||
+            seg.fromStop.code.toUpperCase() === target ||
+            seg.fromStop.name.toUpperCase().includes(target)
+          );
+        });
+
+        toIdx = trip.tripSegments.findIndex((seg) => {
+          if (!to) return true;
+          const target = to.toUpperCase().trim();
+          return (
+            seg.toStopId === to ||
+            seg.toStop.code.toUpperCase() === target ||
+            seg.toStop.name.toUpperCase().includes(target)
+          );
+        });
+
+        if (from && fromIdx === -1) isMatch = false;
+        if (to && toIdx === -1) isMatch = false;
+        if (from && to && fromIdx > toIdx) isMatch = false;
+      }
+
+      if (!isMatch) continue;
+
+      const traversed =
+        fromIdx !== -1 && toIdx !== -1
+          ? trip.tripSegments.slice(fromIdx, toIdx + 1)
+          : trip.tripSegments;
+
+      let minAvailable = trip.bus.totalSeats;
+      if (traversed.length > 0) {
+        minAvailable = traversed.reduce((min, seg) => {
+          const avail = seg.seats.filter((s) => s.status === 'AVAILABLE').length;
+          return Math.min(min, avail);
+        }, trip.bus.totalSeats);
+      }
+
+      const depDate = trip.scheduledDeparture;
+      const depTimeStr = depDate
+        ? depDate.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+          })
+        : '05:00';
+      const arrDate =
+        trip.scheduledArrival ||
+        new Date(depDate.getTime() + 9 * 60 * 60 * 1000);
+      const arrTimeStr = arrDate
+        ? arrDate.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+          })
+        : '14:00';
+
+      results.push({
+        id: trip.id,
+        routeId: trip.routeId,
+        routeCode: trip.route.routeCode,
+        origin: trip.route.originStop.name,
+        originCode: trip.route.originStop.code,
+        destination: trip.route.destinationStop.name,
+        destinationCode: trip.route.destinationStop.code,
+        departure: depTimeStr,
+        arrival: arrTimeStr,
+        departureTime: trip.scheduledDeparture,
+        arrivalTime: trip.scheduledArrival,
+        price: trip.price,
+        availableSeats: minAvailable,
+        totalSeats: trip.bus.totalSeats,
+        busPlate: trip.bus.plateNumber,
+        busSideNumber: trip.bus.sideNumber,
+        busType: trip.bus.busType,
+        amenities: trip.bus.amenities
+          ? trip.bus.amenities.split(',')
+          : ['AC', 'WiFi'],
+      });
+    }
+
+    return results;
+  }
 }

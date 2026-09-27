@@ -15,7 +15,8 @@
     "test:concurrency": "tsx src/test/concurrency.test.ts",
     "test:engine": "tsx src/modules/trips/trips-inventory-engine.spec.ts",
     "test:agent": "tsx src/modules/agent/agent-terminal-system.spec.ts",
-    "test:e2e:booking": "tsx src/test/first-production-e2e-booking.spec.ts"
+    "test:e2e:booking": "tsx src/test/first-production-e2e-booking.spec.ts",
+    "test:phase1": "tsx src/test/phase1-foundation-lifecycle.spec.ts"
   },
   "dependencies": {
     "@bus/shared": "file:../../packages/shared",
