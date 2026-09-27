@@ -1,0 +1,319 @@
+/* Design System: Ethiopian Intercity Bus Platform (Abyssinia Bus) */
+
+:root {
+  --font-primary: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-amharic: 'Noto Sans Ethiopic', 'Plus Jakarta Sans', sans-serif;
+
+  /* Color Palette */
+  --bg-main: #0B0F19;
+  --bg-surface: #111827;
+  --bg-card: #182234;
+  --bg-card-hover: #1E2B42;
+  --bg-input: #0F172A;
+  
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-focus: rgba(245, 158, 11, 0.5);
+
+  /* Brand Accents */
+  --ethiopia-gold: #F59E0B;
+  --ethiopia-gold-hover: #D97706;
+  --ethiopia-gold-glow: rgba(245, 158, 11, 0.25);
+
+  --ethiopia-green: #10B981;
+  --ethiopia-green-hover: #059669;
+  --ethiopia-green-glow: rgba(16, 185, 129, 0.25);
+
+  --ethiopia-red: #EF4444;
+  --ethiopia-red-hover: #DC2626;
+
+  --telebirr-blue: #0284C7;
+  --telebirr-blue-hover: #0369A1;
+
+  --text-main: #F9FAFB;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --text-gold: #FCD34D;
+
+  /* Seat States */
+  --seat-available: #1E293B;
+  --seat-available-border: #334155;
+  --seat-available-hover: #2E3E58;
+  --seat-selected: #F59E0B;
+  --seat-booked: #DC2626;
+  --seat-locked: #EAB308;
+  --seat-boarded: #10B981;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.35), 0 2px 4px -2px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.45), 0 4px 6px -4px rgba(0, 0, 0, 0.45);
+  --shadow-gold: 0 0 20px rgba(245, 158, 11, 0.3);
+  --shadow-green: 0 0 20px rgba(16, 185, 129, 0.3);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-primary);
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Amharic Text Helper */
+.lang-am {
+  font-family: var(--font-amharic);
+}
+
+/* Modern Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Glass Container Utility */
+.glass-panel {
+  background: rgba(24, 34, 52, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+/* Glowing Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-gold {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--ethiopia-gold);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-green {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--ethiopia-green);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-blue {
+  background: rgba(2, 132, 199, 0.15);
+  color: #38BDF8;
+  border: 1px solid rgba(2, 132, 199, 0.3);
+}
+
+.badge-red {
+  background: rgba(239, 68, 68, 0.15);
+  color: #F87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--ethiopia-gold), var(--ethiopia-gold-hover));
+  color: #0B0F19;
+  box-shadow: 0 4px 12px var(--ethiopia-gold-glow);
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px var(--ethiopia-gold-glow);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+}
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-telebirr {
+  background: linear-gradient(135deg, #0284C7, #0369A1);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+}
+.btn-telebirr:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.4);
+}
+
+.btn-green {
+  background: linear-gradient(135deg, var(--ethiopia-green), var(--ethiopia-green-hover));
+  color: #0B0F19;
+  box-shadow: 0 4px 12px var(--ethiopia-green-glow);
+}
+.btn-green:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px var(--ethiopia-green-glow);
+}
+
+/* Form Inputs */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.form-input, .form-select {
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-input:focus, .form-select:focus {
+  border-color: var(--ethiopia-gold);
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+}
+
+/* Seat Map Styling */
+.seat-item {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  user-select: none;
+  border: 1px solid transparent;
+}
+
+.seat-item.available {
+  background: var(--seat-available);
+  border-color: var(--seat-available-border);
+  color: #E2E8F0;
+}
+.seat-item.available:hover {
+  background: var(--seat-available-hover);
+  border-color: var(--ethiopia-gold);
+  transform: scale(1.05);
+}
+
+.seat-item.selected {
+  background: var(--seat-selected);
+  color: #0B0F19;
+  border-color: #FCD34D;
+  transform: scale(1.08);
+  box-shadow: 0 0 12px var(--ethiopia-gold-glow);
+}
+
+.seat-item.booked {
+  background: #3B1818;
+  border-color: #5C1D1D;
+  color: #FCA5A5;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.seat-item.locked {
+  background: #3A2E12;
+  border-color: #634E17;
+  color: #FDE047;
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.seat-item.boarded {
+  background: #133E2B;
+  border-color: #1B5E3F;
+  color: #6EE7B7;
+}
+
+/* Bus Aisle */
+.bus-aisle {
+  width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}
+
+/* Thermal Ticket Printable Receipt Styling */
+@media print {
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .thermal-ticket {
+    width: 80mm;
+    margin: 0 auto;
+    padding: 10px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    line-height: 1.3;
+    color: #000000;
+  }
+}
