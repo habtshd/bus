@@ -11,6 +11,8 @@
     "dev": "npm run dev --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
+    "test:mobile": "cd apps/mobile_app && flutter test",
+    "test:all": "npm --prefix apps/api run test:phase1 && npm --prefix apps/api run test:engine && npm --prefix apps/api run test:agent && npm --prefix apps/api run test:e2e:booking && npm --prefix apps/api run test:booking:service && cd apps/mobile_app && flutter test",
     "lint": "npm run lint --workspaces --if-present"
   },
   "keywords": [

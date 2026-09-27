@@ -20,20 +20,26 @@ class _HomeSearchScreenState extends State<HomeSearchScreen> {
 
   void _searchTrips() async {
     setState(() => _isLoading = true);
-    final trips = await ApiService.getTrips();
+    final trips = await ApiService.searchTrips(
+      from: _selectedOrigin,
+      to: _selectedDestination,
+      date: _selectedDate,
+    );
     setState(() => _isLoading = false);
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => RouteResultsScreen(
-          origin: _selectedOrigin,
-          destination: _selectedDestination,
-          date: _selectedDate,
-          allTrips: trips,
+    if (mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => RouteResultsScreen(
+            origin: _selectedOrigin,
+            destination: _selectedDestination,
+            date: _selectedDate,
+            allTrips: trips,
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   @override
