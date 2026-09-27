@@ -10,6 +10,7 @@
   --bg-card: #182234;
   --bg-card-hover: #1E2B42;
   --bg-input: #0F172A;
+  --bg-app: #0F172A;
   --navbar-bg: rgba(11, 15, 25, 0.95);
   --nav-pill-bg: rgba(24, 34, 52, 0.7);
   --hero-bg: linear-gradient(135deg, rgba(24, 34, 52, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
@@ -76,6 +77,7 @@
   --bg-card: #FFFFFF;
   --bg-card-hover: #F1F5F9;
   --bg-input: #FFFFFF;
+  --bg-app: #F1F5F9;
   --navbar-bg: rgba(255, 255, 255, 0.96);
   --nav-pill-bg: #E2E8F0;
   --hero-bg: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);

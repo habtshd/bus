@@ -13,16 +13,25 @@ import { DriverPortal } from './components/DriverPortal';
 import { PilotLaunchCenter } from './components/PilotLaunchCenter';
 
 export function App() {
-  const [currentTab, setTab] = useState<AppTab>('target-demo');
+  const [currentTab, setTab] = useState<AppTab>('passenger');
   const [isAmharic, setIsAmharic] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-    const saved = localStorage.getItem('bus_theme');
-    return (saved as 'dark' | 'light') || 'light'; // Default to White Mode as requested
+    try {
+      const saved = localStorage.getItem('bus_theme');
+      if (saved === 'dark' || saved === 'light') return saved;
+    } catch {
+      // ignore
+    }
+    return 'dark'; // Default to rich Dark Mode
   });
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('bus_theme', theme);
+    try {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('bus_theme', theme);
+    } catch {
+      // ignore
+    }
   }, [theme]);
 
   const toggleTheme = () => {
