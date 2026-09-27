@@ -1,7 +1,22 @@
-import React from 'react';
-import { Bus, Ticket, Store, ShieldCheck, QrCode, BarChart3, Globe, Radio, Search, Rocket, Sun, Moon, Sparkles } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { 
+  Bus, Ticket, Store, ShieldCheck, QrCode, BarChart3, Radio, 
+  Search, Rocket, Sun, Moon, Sparkles, ChevronDown, Check, Smartphone,
+  Layers, ChevronRight, Globe
+} from 'lucide-react';
 
-export type AppTab = 'target-demo' | 'passenger' | 'mobile-app' | 'my-bookings' | 'agent' | 'driver' | 'dispatch' | 'manifest' | 'conductor' | 'analytics' | 'pilot-launch';
+export type AppTab = 
+  | 'target-demo' 
+  | 'passenger' 
+  | 'mobile-app' 
+  | 'my-bookings' 
+  | 'agent' 
+  | 'driver' 
+  | 'dispatch' 
+  | 'manifest' 
+  | 'conductor' 
+  | 'analytics' 
+  | 'pilot-launch';
 
 interface NavbarProps {
   currentTab: AppTab;
@@ -12,15 +27,59 @@ interface NavbarProps {
   toggleTheme: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ currentTab, setTab, isAmharic, setIsAmharic, theme, toggleTheme }) => {
+export const Navbar: React.FC<NavbarProps> = ({ 
+  currentTab, 
+  setTab, 
+  isAmharic, 
+  setIsAmharic, 
+  theme, 
+  toggleTheme 
+}) => {
+  const [isPortalsOpen, setIsPortalsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsPortalsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const isStaffTab = [
+    'agent', 'driver', 'dispatch', 'manifest', 'conductor', 'analytics', 'pilot-launch', 'target-demo'
+  ].includes(currentTab);
+
+  const getStaffTabLabel = () => {
+    switch (currentTab) {
+      case 'agent': return isAmharic ? 'ካውንተር POS' : 'Agent POS';
+      case 'driver': return isAmharic ? 'አሽከርካሪ' : 'Driver Cockpit';
+      case 'dispatch': return isAmharic ? 'ስምሪት' : 'Dispatch';
+      case 'manifest': return isAmharic ? 'ማኒፌስት' : 'Manifest';
+      case 'conductor': return isAmharic ? 'QR ስካነር' : 'Conductor';
+      case 'analytics': return isAmharic ? 'ማኔጅመንት' : 'Management';
+      case 'pilot-launch': return isAmharic ? 'ምረቃ' : 'Launch & Pilot';
+      case 'target-demo': return isAmharic ? 'የዒላማ ፍሰት' : '5-Actor Target';
+      default: return isAmharic ? 'የስራ ክፍሎች' : 'Staff Portals';
+    }
+  };
+
+  const handleSelectTab = (tab: AppTab) => {
+    setTab(tab);
+    setIsPortalsOpen(false);
+  };
+
   return (
     <header style={{
       borderBottom: '1px solid var(--border-subtle)',
       background: 'var(--navbar-bg)',
-      backdropFilter: 'blur(16px)',
+      backdropFilter: 'blur(20px)',
       position: 'sticky',
       top: 0,
-      zIndex: 50,
+      zIndex: 100,
       transition: 'background-color 0.2s ease, border-color 0.2s ease'
     }}>
       <div style={{
@@ -30,190 +89,455 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setTab, isAmharic, s
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '14px'
+        gap: '16px'
       }}>
-        {/* Brand Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => setTab('target-demo')}>
+        
+        {/* Brand Logo - Modern & Minimalist */}
+        <div 
+          style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', userSelect: 'none' }} 
+          onClick={() => setTab('passenger')}
+        >
           <div style={{
-            width: '40px',
-            height: '40px',
+            width: '38px',
+            height: '38px',
             borderRadius: '10px',
             background: 'linear-gradient(135deg, var(--ethiopia-gold), #B45309)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 0 16px var(--ethiopia-gold-glow)'
+            boxShadow: '0 4px 12px var(--ethiopia-gold-glow)'
           }}>
-            <Bus size={22} color="#0B0F19" />
+            <Bus size={20} color="#0B0F19" />
           </div>
           <div>
-            <div style={{ fontWeight: 800, fontSize: '1.15rem', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>ABYSSINIA BUS</span>
-              <span className="badge badge-green" style={{ fontSize: '0.65rem', padding: '2px 8px', letterSpacing: '0.06em' }}>
-                PRODUCTION
-              </span>
+            <div style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>ABYSSINIA</span>
+              <span style={{ color: 'var(--ethiopia-gold)', fontWeight: 600 }}>BUS</span>
+              <span style={{ 
+                width: '6px', 
+                height: '6px', 
+                borderRadius: '50%', 
+                background: 'var(--ethiopia-green)',
+                boxShadow: '0 0 8px var(--ethiopia-green)' 
+              }} />
             </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-              {isAmharic ? 'አቢሲኒያ የረጅም ርቀት አውቶቡስ' : 'Ethiopian Intercity Bus Platform'}
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+              {isAmharic ? 'የረጅም ርቀት አውቶቡስ ትራንስፖርት' : 'Intercity Transportation S.C.'}
             </div>
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--nav-pill-bg)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border-subtle)', flexWrap: 'wrap' }}>
-          <button
-            onClick={() => setTab('target-demo')}
-            className={`btn ${currentTab === 'target-demo' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{
-              padding: '6px 11px',
-              fontSize: '0.8rem',
-              borderColor: 'var(--ethiopia-gold)',
-              background: currentTab === 'target-demo' ? 'var(--ethiopia-gold)' : 'rgba(217, 119, 6, 0.12)',
-              color: currentTab === 'target-demo' ? '#000' : 'var(--ethiopia-gold)',
-              fontWeight: 800
-            }}
-          >
-            <Sparkles size={14} color={currentTab === 'target-demo' ? '#000' : 'var(--ethiopia-gold)'} />
-            <span>{isAmharic ? 'የዒላማ ፍሰት' : 'Target Flow (5-Actor)'}</span>
-          </button>
+        {/* Simplified & Modernist Central Navigation */}
+        <nav style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          background: 'var(--nav-pill-bg)',
+          padding: '4px 6px',
+          borderRadius: '999px',
+          border: '1px solid var(--border-subtle)',
+          boxShadow: 'var(--shadow-sm)'
+        }}>
+          {/* 1. Book Trip (Primary Passenger) */}
           <button
             onClick={() => setTab('passenger')}
             className={`btn ${currentTab === 'passenger' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '6px 10px', fontSize: '0.8rem' }}
+            style={{
+              padding: '7px 16px',
+              fontSize: '0.84rem',
+              borderRadius: '999px',
+              fontWeight: currentTab === 'passenger' ? 700 : 500,
+              gap: '6px'
+            }}
           >
-            <Ticket size={14} />
-            <span>{isAmharic ? 'ድረ-ገጽ' : 'Web Booking'}</span>
+            <Ticket size={15} />
+            <span>{isAmharic ? 'ትኬት ይቁረጡ' : 'Book Trips'}</span>
           </button>
 
-          <button
-            onClick={() => setTab('mobile-app')}
-            className={`btn ${currentTab === 'mobile-app' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '6px 10px', fontSize: '0.8rem' }}
-          >
-            <Ticket size={14} />
-            <span>{isAmharic ? 'ሞባይል መተግበሪያ' : 'Mobile App'}</span>
-          </button>
-
+          {/* 2. My Bookings */}
           <button
             onClick={() => setTab('my-bookings')}
             className={`btn ${currentTab === 'my-bookings' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '6px 10px', fontSize: '0.8rem' }}
+            style={{
+              padding: '7px 14px',
+              fontSize: '0.84rem',
+              borderRadius: '999px',
+              fontWeight: currentTab === 'my-bookings' ? 700 : 500,
+              gap: '6px'
+            }}
           >
             <Search size={14} />
-            <span>{isAmharic ? 'ትኬቴ' : 'My Bookings'}</span>
+            <span>{isAmharic ? 'ትኬቴን ፈልግ' : 'My Bookings'}</span>
           </button>
 
+          {/* 3. Mobile App Simulator */}
           <button
-            onClick={() => setTab('agent')}
-            className={`btn ${currentTab === 'agent' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '6px 10px', fontSize: '0.8rem' }}
+            onClick={() => setTab('mobile-app')}
+            className={`btn ${currentTab === 'mobile-app' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{
+              padding: '7px 14px',
+              fontSize: '0.84rem',
+              borderRadius: '999px',
+              fontWeight: currentTab === 'mobile-app' ? 700 : 500,
+              gap: '6px'
+            }}
           >
-            <Store size={14} />
-            <span>{isAmharic ? 'ካውንተር' : 'Agent POS'}</span>
+            <Smartphone size={14} />
+            <span>{isAmharic ? 'ሞባይል መተግበሪያ' : 'Mobile App'}</span>
           </button>
 
-          <button
-            onClick={() => setTab('driver')}
-            className={`btn ${currentTab === 'driver' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '6px 10px', fontSize: '0.8rem' }}
-          >
-            <Radio size={14} />
-            <span>{isAmharic ? 'አሽከርካሪ' : 'Driver App'}</span>
-          </button>
+          {/* Modernist Portals / Workspaces Dropdown */}
+          <div style={{ position: 'relative' }} ref={dropdownRef}>
+            <button
+              onClick={() => setIsPortalsOpen(prev => !prev)}
+              className={`btn ${isStaffTab ? 'btn-primary' : 'btn-secondary'}`}
+              style={{
+                padding: '7px 14px',
+                fontSize: '0.84rem',
+                borderRadius: '999px',
+                gap: '6px',
+                fontWeight: isStaffTab ? 700 : 500,
+                background: isStaffTab ? 'rgba(245, 158, 11, 0.18)' : undefined,
+                color: isStaffTab ? 'var(--ethiopia-gold)' : undefined,
+                borderColor: isStaffTab ? 'var(--ethiopia-gold)' : undefined
+              }}
+            >
+              <Layers size={14} />
+              <span>{isStaffTab ? getStaffTabLabel() : (isAmharic ? 'የስራ ክፍሎች' : 'Staff & Operations')}</span>
+              <ChevronDown size={13} style={{ transform: isPortalsOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+            </button>
 
-          <button
-            onClick={() => setTab('dispatch')}
-            className={`btn ${currentTab === 'dispatch' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '6px 10px', fontSize: '0.8rem' }}
-          >
-            <Radio size={14} />
-            <span>{isAmharic ? 'ስምሪት' : 'Dispatch'}</span>
-          </button>
+            {/* Modernist Dropdown Menu */}
+            {isPortalsOpen && (
+              <div style={{
+                position: 'absolute',
+                top: 'calc(100% + 8px)',
+                right: 0,
+                width: '320px',
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '16px',
+                padding: '12px',
+                boxShadow: 'var(--shadow-lg)',
+                zIndex: 1000,
+                backdropFilter: 'blur(24px)'
+              }}>
+                <div style={{ 
+                  padding: '4px 10px 8px', 
+                  fontSize: '0.72rem', 
+                  fontWeight: 700, 
+                  color: 'var(--text-muted)', 
+                  textTransform: 'uppercase', 
+                  letterSpacing: '0.06em' 
+                }}>
+                  {isAmharic ? 'የኩባንያው የስራ ክፍሎች' : 'Internal Portals & Operations'}
+                </div>
 
-          <button
-            onClick={() => setTab('manifest')}
-            className={`btn ${currentTab === 'manifest' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '6px 10px', fontSize: '0.8rem' }}
-          >
-            <ShieldCheck size={14} />
-            <span>{isAmharic ? 'ማኒፌስት' : 'Manifest'}</span>
-          </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                  
+                  {/* Target Flow (5-Actor) */}
+                  <button
+                    onClick={() => handleSelectTab('target-demo')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      padding: '8px 10px',
+                      background: currentTab === 'target-demo' ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
+                      border: 'none',
+                      borderRadius: '8px',
+                      color: currentTab === 'target-demo' ? 'var(--ethiopia-gold)' : 'var(--text-main)',
+                      cursor: 'pointer',
+                      fontSize: '0.84rem',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Sparkles size={16} color="var(--ethiopia-gold)" />
+                      <div>
+                        <div style={{ fontWeight: 600 }}>{isAmharic ? 'የዒላማ ፍሰት (5-ተዋናይ)' : '5-Actor Target Chain'}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Admin → Passenger → Agent → Conductor → Lead</div>
+                      </div>
+                    </div>
+                    {currentTab === 'target-demo' && <Check size={14} color="var(--ethiopia-gold)" />}
+                  </button>
 
-          <button
-            onClick={() => setTab('conductor')}
-            className={`btn ${currentTab === 'conductor' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '6px 10px', fontSize: '0.8rem' }}
-          >
-            <QrCode size={14} />
-            <span>{isAmharic ? 'ስካነር' : 'Scanner'}</span>
-          </button>
+                  <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '4px 0' }} />
 
-          <button
-            onClick={() => setTab('analytics')}
-            className={`btn ${currentTab === 'analytics' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '6px 10px', fontSize: '0.8rem' }}
-          >
-            <BarChart3 size={14} />
-            <span>{isAmharic ? 'ማኔጅመንት' : 'Management'}</span>
-          </button>
+                  {/* Frontline POS Counter */}
+                  <button
+                    onClick={() => handleSelectTab('agent')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      padding: '8px 10px',
+                      background: currentTab === 'agent' ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
+                      border: 'none',
+                      borderRadius: '8px',
+                      color: currentTab === 'agent' ? 'var(--ethiopia-gold)' : 'var(--text-main)',
+                      cursor: 'pointer',
+                      fontSize: '0.84rem',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Store size={15} color="var(--text-muted)" />
+                      <div>
+                        <div style={{ fontWeight: 600 }}>{isAmharic ? 'የቲኬት ቆጣሪ POS' : 'Agent POS Counter'}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Cash sales, thermal printing & shift drawer</div>
+                      </div>
+                    </div>
+                    {currentTab === 'agent' && <Check size={14} color="var(--ethiopia-gold)" />}
+                  </button>
 
-          <button
-            onClick={() => setTab('pilot-launch')}
-            className={`btn ${currentTab === 'pilot-launch' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '6px 10px', fontSize: '0.8rem', borderColor: 'var(--ethiopia-gold)' }}
-          >
-            <Rocket size={14} color="var(--ethiopia-gold)" />
-            <span style={{ fontWeight: 800 }}>{isAmharic ? 'ምረቃ' : 'Launch & Pilot'}</span>
-          </button>
+                  {/* Driver Cockpit */}
+                  <button
+                    onClick={() => handleSelectTab('driver')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      padding: '8px 10px',
+                      background: currentTab === 'driver' ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
+                      border: 'none',
+                      borderRadius: '8px',
+                      color: currentTab === 'driver' ? 'var(--ethiopia-gold)' : 'var(--text-main)',
+                      cursor: 'pointer',
+                      fontSize: '0.84rem',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Radio size={15} color="var(--text-muted)" />
+                      <div>
+                        <div style={{ fontWeight: 600 }}>{isAmharic ? 'የአሽከርካሪ መተግበሪያ' : 'Driver Cockpit'}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>GPS telemetry, speed monitoring & passenger log</div>
+                      </div>
+                    </div>
+                    {currentTab === 'driver' && <Check size={14} color="var(--ethiopia-gold)" />}
+                  </button>
+
+                  {/* Conductor QR Scanner */}
+                  <button
+                    onClick={() => handleSelectTab('conductor')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      padding: '8px 10px',
+                      background: currentTab === 'conductor' ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
+                      border: 'none',
+                      borderRadius: '8px',
+                      color: currentTab === 'conductor' ? 'var(--ethiopia-gold)' : 'var(--text-main)',
+                      cursor: 'pointer',
+                      fontSize: '0.84rem',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <QrCode size={15} color="var(--text-muted)" />
+                      <div>
+                        <div style={{ fontWeight: 600 }}>{isAmharic ? 'የኮንዳክተር QR ስካነር' : 'Conductor QR Scanner'}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Gate boarding validation & fraud prevention</div>
+                      </div>
+                    </div>
+                    {currentTab === 'conductor' && <Check size={14} color="var(--ethiopia-gold)" />}
+                  </button>
+
+                  {/* Dispatcher Control */}
+                  <button
+                    onClick={() => handleSelectTab('dispatch')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      padding: '8px 10px',
+                      background: currentTab === 'dispatch' ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
+                      border: 'none',
+                      borderRadius: '8px',
+                      color: currentTab === 'dispatch' ? 'var(--ethiopia-gold)' : 'var(--text-main)',
+                      cursor: 'pointer',
+                      fontSize: '0.84rem',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Radio size={15} color="var(--text-muted)" />
+                      <div>
+                        <div style={{ fontWeight: 600 }}>{isAmharic ? 'የኦፕሬሽን ስምሪት' : 'Fleet Dispatcher'}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Bus assignments, delays & live telemetry map</div>
+                      </div>
+                    </div>
+                    {currentTab === 'dispatch' && <Check size={14} color="var(--ethiopia-gold)" />}
+                  </button>
+
+                  {/* Checkpoint Manifest */}
+                  <button
+                    onClick={() => handleSelectTab('manifest')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      padding: '8px 10px',
+                      background: currentTab === 'manifest' ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
+                      border: 'none',
+                      borderRadius: '8px',
+                      color: currentTab === 'manifest' ? 'var(--ethiopia-gold)' : 'var(--text-main)',
+                      cursor: 'pointer',
+                      fontSize: '0.84rem',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <ShieldCheck size={15} color="var(--text-muted)" />
+                      <div>
+                        <div style={{ fontWeight: 600 }}>{isAmharic ? 'የፍተሻ ኬላ ማኒፌስት' : 'Checkpoint Manifest'}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Federal Police & Kebele compliance report</div>
+                      </div>
+                    </div>
+                    {currentTab === 'manifest' && <Check size={14} color="var(--ethiopia-gold)" />}
+                  </button>
+
+                  <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '4px 0' }} />
+
+                  {/* Management & Analytics */}
+                  <button
+                    onClick={() => handleSelectTab('analytics')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      padding: '8px 10px',
+                      background: currentTab === 'analytics' ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
+                      border: 'none',
+                      borderRadius: '8px',
+                      color: currentTab === 'analytics' ? 'var(--ethiopia-gold)' : 'var(--text-main)',
+                      cursor: 'pointer',
+                      fontSize: '0.84rem',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <BarChart3 size={15} color="var(--text-muted)" />
+                      <div>
+                        <div style={{ fontWeight: 600 }}>{isAmharic ? 'የስራ አስኪያጅ ዳሽቦርድ' : 'Management & Analytics'}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Revenue, load factor & settlement ledger</div>
+                      </div>
+                    </div>
+                    {currentTab === 'analytics' && <Check size={14} color="var(--ethiopia-gold)" />}
+                  </button>
+
+                  {/* Launch & Pilot */}
+                  <button
+                    onClick={() => handleSelectTab('pilot-launch')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      padding: '8px 10px',
+                      background: currentTab === 'pilot-launch' ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
+                      border: 'none',
+                      borderRadius: '8px',
+                      color: currentTab === 'pilot-launch' ? 'var(--ethiopia-gold)' : 'var(--text-main)',
+                      cursor: 'pointer',
+                      fontSize: '0.84rem',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Rocket size={15} color="var(--ethiopia-gold)" />
+                      <div>
+                        <div style={{ fontWeight: 600 }}>{isAmharic ? 'የፓይለት ምረቃ ማዕከል' : 'Launch & Pilot Center'}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Readiness checklist & live corridor rollout</div>
+                      </div>
+                    </div>
+                    {currentTab === 'pilot-launch' && <Check size={14} color="var(--ethiopia-gold)" />}
+                  </button>
+
+                </div>
+              </div>
+            )}
+          </div>
         </nav>
 
-        {/* Right actions: White/Dark Mode Toggle, Language & API status */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {/* White / Dark Mode Toggle */}
+        {/* Right Actions: Language Switch, Theme, Status */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          
+          {/* Modern Language Toggle Switch */}
+          <button
+            onClick={() => setIsAmharic(!isAmharic)}
+            className="btn btn-secondary"
+            style={{
+              padding: '6px 10px',
+              fontSize: '0.78rem',
+              borderRadius: '8px',
+              fontWeight: 600,
+              gap: '4px'
+            }}
+            title="Toggle English / አማርኛ"
+          >
+            <Globe size={13} color="var(--text-muted)" />
+            <span>{isAmharic ? 'አማርኛ' : 'EN'}</span>
+          </button>
+
+          {/* Modern Theme Icon Toggle */}
           <button
             onClick={toggleTheme}
             className="btn btn-secondary"
             style={{
-              padding: '6px 12px',
-              fontSize: '0.8rem',
-              gap: '6px',
-              border: theme === 'light' ? '1px solid var(--ethiopia-gold)' : '1px solid var(--border-subtle)'
+              width: '36px',
+              height: '36px',
+              padding: 0,
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
-            title={theme === 'light' ? 'Switch to Dark Mode (ጨለማ)' : 'Switch to White Mode (ነጭ)'}
+            title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
           >
             {theme === 'light' ? (
-              <>
-                <Sun size={15} color="var(--ethiopia-gold)" />
-                <span style={{ fontWeight: 700, color: 'var(--ethiopia-gold)' }}>
-                  {isAmharic ? 'ነጭ ሁነታ' : 'White Mode'}
-                </span>
-              </>
+              <Sun size={16} color="var(--ethiopia-gold)" />
             ) : (
-              <>
-                <Moon size={15} color="#94A3B8" />
-                <span style={{ fontWeight: 700 }}>
-                  {isAmharic ? 'ጨለማ ሁነታ' : 'Dark Mode'}
-                </span>
-              </>
+              <Moon size={16} color="var(--text-secondary)" />
             )}
           </button>
 
-          <button
-            onClick={() => setIsAmharic(!isAmharic)}
-            className="btn btn-secondary"
-            style={{ padding: '6px 12px', fontSize: '0.8rem', gap: '6px' }}
-            title="Toggle English / Amharic"
+          {/* Subtle Live API Status */}
+          <div 
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '4px 10px',
+              borderRadius: '999px',
+              background: 'rgba(16, 185, 129, 0.1)',
+              border: '1px solid rgba(16, 185, 129, 0.25)',
+              fontSize: '0.72rem',
+              fontWeight: 600,
+              color: 'var(--ethiopia-green)'
+            }}
+            title="Production API connected on port 4000"
           >
-            <Globe size={14} color="var(--ethiopia-gold)" />
-            <span style={{ fontWeight: 700 }}>{isAmharic ? 'English' : 'አማርኛ'}</span>
-          </button>
-
-          <div className="badge badge-green" style={{ fontSize: '0.7rem' }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--ethiopia-green)' }}></span>
-            <span>API :4000</span>
+            <span style={{ 
+              width: '6px', 
+              height: '6px', 
+              borderRadius: '50%', 
+              background: 'var(--ethiopia-green)' 
+            }} />
+            <span>4000</span>
           </div>
+
         </div>
+
       </div>
     </header>
   );

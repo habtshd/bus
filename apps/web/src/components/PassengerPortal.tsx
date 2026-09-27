@@ -27,11 +27,12 @@ import {
   Smartphone,
   ShieldCheck,
   Check,
-  Info,
   AlertCircle,
   RefreshCw,
-  Navigation
+  Navigation,
+  ArrowLeftRight
 } from 'lucide-react';
+
 
 interface PassengerPortalProps {
   isAmharic: boolean;
@@ -583,41 +584,43 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
         </div>
       </div>
 
-      {/* Hero Search Banner with Ethiopian Branding */}
+      {/* Modernist Hero & Fast Booking Search */}
       <div
         className="glass-panel no-print"
         style={{
-          padding: '36px',
-          marginBottom: '32px',
+          padding: '32px 36px',
+          marginBottom: '28px',
           background: 'var(--hero-bg)',
-          border: '1px solid rgba(245, 158, 11, 0.3)',
+          border: '1px solid var(--border-subtle)',
           boxShadow: 'var(--hero-shadow)',
-          position: 'relative',
-          overflow: 'hidden'
+          borderRadius: '24px',
+          position: 'relative'
         }}
       >
-        <div style={{ maxWidth: '840px', marginBottom: '28px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
-            <span className="badge badge-gold" style={{ fontSize: '0.82rem', padding: '4px 10px' }}>
-              <Award size={14} style={{ display: 'inline', marginRight: '4px' }} />
-              ABYSSINIA BUS S.C. (አቢሲኒያ አውቶቡስ)
-            </span>
-            <span className="badge badge-green" style={{ fontSize: '0.8rem' }}>
-              FDRE Ministry of Transport Authorized
-            </span>
-            <span className="badge badge-blue" style={{ fontSize: '0.8rem' }}>
-              <span className="pulse-beacon" style={{ marginRight: '6px' }} />
-              Live Seat Engine Active
+        <div style={{ maxWidth: '800px', marginBottom: '22px' }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '4px 12px',
+            borderRadius: '999px',
+            background: 'rgba(245, 158, 11, 0.08)',
+            border: '1px solid rgba(245, 158, 11, 0.25)',
+            marginBottom: '14px'
+          }}>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--ethiopia-green)' }} />
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--ethiopia-gold)', letterSpacing: '0.04em' }}>
+              ABYSSINIA BUS S.C. • OFFICIAL INTERCITY OPERATOR
             </span>
           </div>
 
           <h1
             style={{
-              fontSize: '2.6rem',
+              fontSize: '2.5rem',
               fontWeight: 900,
               lineHeight: 1.15,
-              letterSpacing: '-0.02em',
-              marginBottom: '12px',
+              letterSpacing: '-0.03em',
+              marginBottom: '8px',
               color: 'var(--text-main)'
             }}
           >
@@ -626,26 +629,27 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
               : 'Direct Intercity Coach Travel Across Ethiopia'}
           </h1>
 
-          <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: 1.5 }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.5, maxWidth: '640px' }}>
             {isAmharic
-              ? 'ከአዲስ አበባ ወደ ሀዋሳ፣ ባሕር ዳር፣ ድሬዳዋ፣ ጎንደር እና ጅማ አስተማማኝ ጉዞ በቴሌብር እና በንግድ ባንክ ብር ይክፈሉ። ፈጣን የQR ትኬት እና የፖሊስ ማኒፌስት ፈቃድ።'
-              : 'Fast, secure online ticketing for Ethiopia’s major transit corridors. Pay seamlessly with Telebirr or CBE Birr, receive instant cryptographic QR e-tickets, and travel stress-free.'}
+              ? 'ከአዲስ አበባ ወደ ሀዋሳ፣ ባሕር ዳር፣ ድሬዳዋ፣ ጎንደር እና ጅማ አስተማማኝ ጉዞ በቴሌብር እና በንግድ ባንክ ብር ይክፈሉ።'
+              : 'Fast, secure online ticketing for Ethiopia’s major transit corridors. Pay seamlessly with Telebirr or CBE Birr and receive instant QR boarding passes.'}
           </p>
         </div>
 
-        {/* Interactive Search Widget */}
+        {/* Streamlined Modernist Search Widget */}
         <div
-          className="hero-search-widget"
           style={{
-            padding: '24px',
-            borderRadius: '16px',
+            background: 'var(--bg-surface)',
+            padding: '20px 24px',
+            borderRadius: '20px',
             border: '1px solid var(--border-subtle)',
+            boxShadow: 'var(--shadow-md)'
           }}
         >
-          {/* Trip Type Toggle & Date Shortcuts */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-            <div style={{ display: 'flex', gap: '20px', fontSize: '0.88rem' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+          {/* Trip Type & Quick Date Shortcuts */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+            <div style={{ display: 'flex', gap: '16px', fontSize: '0.84rem' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
                 <input
                   type="radio"
                   name="tripType"
@@ -654,11 +658,11 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
                   style={{ accentColor: 'var(--ethiopia-gold)' }}
                 />
                 <span style={{ fontWeight: 700, color: tripType === 'ONE_WAY' ? 'var(--ethiopia-gold)' : 'var(--text-secondary)' }}>
-                  {isAmharic ? 'ነጠላ ጉዞ (One-Way)' : 'One-Way Journey'}
+                  {isAmharic ? 'ነጠላ ጉዞ' : 'One-Way'}
                 </span>
               </label>
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
                 <input
                   type="radio"
                   name="tripType"
@@ -667,19 +671,19 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
                   style={{ accentColor: 'var(--ethiopia-gold)' }}
                 />
                 <span style={{ fontWeight: 700, color: tripType === 'ROUND_TRIP' ? 'var(--ethiopia-gold)' : 'var(--text-secondary)' }}>
-                  {isAmharic ? 'የደርሶ መልስ (Round-Trip)' : 'Round-Trip'}
+                  {isAmharic ? 'ደርሶ መልስ' : 'Round-Trip'}
                 </span>
               </label>
             </div>
 
             {/* Quick Date Shortcuts */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.78rem' }}>
-              <span style={{ color: 'var(--text-muted)' }}>{isAmharic ? 'ፈጣን ቀን:' : 'Quick Date:'}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.76rem' }}>
+              <span style={{ color: 'var(--text-muted)' }}>{isAmharic ? 'ቀን:' : 'Quick:'}</span>
               <button
                 type="button"
                 onClick={() => setDateShortcut(0)}
                 className="btn btn-secondary"
-                style={{ padding: '3px 8px', fontSize: '0.75rem', borderRadius: '6px' }}
+                style={{ padding: '2px 8px', fontSize: '0.72rem', borderRadius: '6px' }}
               >
                 {isAmharic ? 'ዛሬ' : 'Today'}
               </button>
@@ -687,7 +691,7 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
                 type="button"
                 onClick={() => setDateShortcut(1)}
                 className="btn btn-secondary"
-                style={{ padding: '3px 8px', fontSize: '0.75rem', borderRadius: '6px' }}
+                style={{ padding: '2px 8px', fontSize: '0.72rem', borderRadius: '6px' }}
               >
                 {isAmharic ? 'ነገ' : 'Tomorrow'}
               </button>
@@ -695,32 +699,36 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
                 type="button"
                 onClick={() => setDateShortcut(3)}
                 className="btn btn-secondary"
-                style={{ padding: '3px 8px', fontSize: '0.75rem', borderRadius: '6px' }}
+                style={{ padding: '2px 8px', fontSize: '0.72rem', borderRadius: '6px' }}
               >
-                {isAmharic ? 'የሳምንቱ መጨረሻ' : 'Weekend'}
+                {isAmharic ? 'ቅዳሜ/እሁድ' : 'Weekend'}
               </button>
             </div>
           </div>
 
+          {/* Search Inputs with Swap Button */}
           <div
             style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
-              gap: '16px',
-              alignItems: 'flex-end'
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              flexWrap: 'wrap'
             }}
           >
-            <div className="form-group">
-              <label className="form-label">{isAmharic ? 'መነሻ ተርሚናል' : 'From / Origin'}</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <MapPin size={18} color="var(--ethiopia-gold)" />
+            {/* Origin */}
+            <div style={{ flex: '1 1 200px' }} className="form-group">
+              <label className="form-label" style={{ fontSize: '0.75rem', marginBottom: '4px' }}>
+                {isAmharic ? 'መነሻ' : 'Origin'}
+              </label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <MapPin size={16} color="var(--ethiopia-gold)" />
                 <select
                   className="form-select"
                   value={selectedOrigin}
                   onChange={(e) => setSelectedOrigin(e.target.value)}
-                  style={{ width: '100%' }}
+                  style={{ width: '100%', fontSize: '0.85rem', padding: '8px 10px', borderRadius: '10px' }}
                 >
-                  <option value="Addis Ababa">Addis Ababa (Autobis Tera / Kality / Lam Beret)</option>
+                  <option value="Addis Ababa">Addis Ababa (Autobis Tera / Kality)</option>
                   <option value="Hawassa">Hawassa Central Terminal</option>
                   <option value="Bahir Dar">Bahir Dar Main Terminal</option>
                   <option value="Dire Dawa">Dire Dawa Kezira Terminal</option>
@@ -729,17 +737,48 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
               </div>
             </div>
 
-            <div className="form-group">
-              <label className="form-label">{isAmharic ? 'መዳረሻ ከተማ' : 'To / Destination'}</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <MapPin size={18} color="var(--ethiopia-green)" />
+            {/* Swap Button */}
+            <div style={{ paddingTop: '16px' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (selectedDestination !== 'All') {
+                    const temp = selectedOrigin;
+                    setSelectedOrigin(selectedDestination);
+                    setSelectedDestination(temp);
+                  }
+                }}
+                className="btn btn-secondary"
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  padding: 0,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '1px solid var(--border-subtle)'
+                }}
+                title="Swap Origin and Destination"
+              >
+                <ArrowLeftRight size={14} color="var(--text-secondary)" />
+              </button>
+            </div>
+
+            {/* Destination */}
+            <div style={{ flex: '1 1 200px' }} className="form-group">
+              <label className="form-label" style={{ fontSize: '0.75rem', marginBottom: '4px' }}>
+                {isAmharic ? 'መዳረሻ' : 'Destination'}
+              </label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <MapPin size={16} color="var(--ethiopia-green)" />
                 <select
                   className="form-select"
                   value={selectedDestination}
                   onChange={(e) => setSelectedDestination(e.target.value)}
-                  style={{ width: '100%' }}
+                  style={{ width: '100%', fontSize: '0.85rem', padding: '8px 10px', borderRadius: '10px' }}
                 >
-                  <option value="All">{isAmharic ? 'ሁሉም ከተሞች (All Destinations)' : 'All Major Destinations (All)'}</option>
+                  <option value="All">{isAmharic ? 'ሁሉም ከተሞች (All Destinations)' : 'All Destinations (All)'}</option>
                   <option value="Hawassa">Hawassa (ሀዋሳ) — 650 ETB</option>
                   <option value="Bahir Dar">Bahir Dar (ባሕር ዳር) — 1,200 ETB</option>
                   <option value="Dire Dawa">Dire Dawa (ድሬዳዋ) — 1,100 ETB</option>
@@ -749,31 +788,87 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
               </div>
             </div>
 
-            <div className="form-group">
-              <label className="form-label">{isAmharic ? 'የጉዞ ቀን' : 'Travel Date'}</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Calendar size={18} color="#0284C7" />
+            {/* Travel Date */}
+            <div style={{ flex: '1 1 160px' }} className="form-group">
+              <label className="form-label" style={{ fontSize: '0.75rem', marginBottom: '4px' }}>
+                {isAmharic ? 'የጉዞ ቀን' : 'Travel Date'}
+              </label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Calendar size={16} color="#0284C7" />
                 <input
                   type="date"
                   className="form-input"
                   value={travelDate}
                   onChange={(e) => setTravelDate(e.target.value)}
-                  style={{ width: '100%' }}
+                  style={{ width: '100%', fontSize: '0.85rem', padding: '8px 10px', borderRadius: '10px' }}
                 />
               </div>
             </div>
 
-            <div>
+            {/* CTA Search Button */}
+            <div style={{ paddingTop: '16px', flex: '0 0 auto' }}>
               <button
                 className="btn btn-primary"
-                style={{ width: '100%', height: '44px', fontWeight: 800, fontSize: '0.95rem' }}
+                style={{
+                  height: '40px',
+                  padding: '0 24px',
+                  fontWeight: 800,
+                  fontSize: '0.9rem',
+                  borderRadius: '12px',
+                  gap: '8px'
+                }}
                 onClick={loadTrips}
               >
-                <Search size={18} />
-                <span>{isAmharic ? 'አውቶቡስ ፈልግ' : 'Search Departures'}</span>
+                <Search size={16} />
+                <span>{isAmharic ? 'አውቶቡስ ፈልግ' : 'Search Buses'}</span>
               </button>
             </div>
           </div>
+
+          {/* Quick Popular Destination Corridor Chips */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            flexWrap: 'wrap',
+            marginTop: '14px',
+            paddingTop: '12px',
+            borderTop: '1px solid var(--border-subtle)'
+          }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+              {isAmharic ? 'ፈጣን ምርጫ:' : 'Fast Corridor:'}
+            </span>
+            {[
+              { name: 'Hawassa', am: 'ሀዋሳ', fare: '650' },
+              { name: 'Bahir Dar', am: 'ባሕር ዳር', fare: '1,200' },
+              { name: 'Dire Dawa', am: 'ድሬዳዋ', fare: '1,100' },
+              { name: 'Gondar', am: 'ጎንደር', fare: '1,450' },
+              { name: 'Jimma', am: 'ጅማ', fare: '850' },
+            ].map(c => (
+              <button
+                key={c.name}
+                type="button"
+                onClick={() => {
+                  setSelectedDestination(c.name);
+                }}
+                className="btn btn-secondary"
+                style={{
+                  padding: '3px 10px',
+                  fontSize: '0.75rem',
+                  borderRadius: '999px',
+                  border: selectedDestination === c.name ? '1px solid var(--ethiopia-gold)' : '1px solid var(--border-subtle)',
+                  background: selectedDestination === c.name ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
+                  color: selectedDestination === c.name ? 'var(--ethiopia-gold)' : 'var(--text-secondary)',
+                  fontWeight: selectedDestination === c.name ? 700 : 500,
+                  gap: '6px'
+                }}
+              >
+                <span>{isAmharic ? c.am : c.name}</span>
+                <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>ETB {c.fare}</span>
+              </button>
+            ))}
+          </div>
+
         </div>
 
         {/* Trust Signals & Fleet Amenities Strip */}

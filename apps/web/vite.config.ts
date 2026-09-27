@@ -1,4 +1,4 @@
-import path from 'path';
+import { fileURLToPath } from 'url';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
@@ -7,9 +7,10 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@bus/shared': path.resolve(__dirname, '../../packages/shared/src/index.ts'),
+      '@bus/shared': fileURLToPath(new URL('../../packages/shared/src/index.ts', import.meta.url)),
     },
   },
+
   server: {
     host: true,
     port: 5173,
