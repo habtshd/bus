@@ -1,5 +1,10 @@
 // Production-Ready Prisma Schema for Ethiopian Intercity Bus Platform
-// Architecture: Trip + Segment + Seat Inventory Engine with inverse relations
+// Architecture: Modular Monolith — Complete Single-Source-of-Truth Data Architecture
+// Covers: Company, Branch, User, Passenger, Bus, BusType, BusSeat (Seat), Driver, TripDriverAssignment,
+//         Route, Stop, RouteStop, Schedule, Trip, TripSegment, TripSegmentSeat (TripSeat), Reservation,
+//         Booking, BookingSegment, BookingPassenger, Payment, PaymentEvent, Ticket, Boarding,
+//         GPSLocation, IncidentReport, MaintenanceRecord, MaintenancePart, SparePart,
+//         FuelTransaction, Notification, SupportTicket, AuditLog, CashShift, SeatLock
 
 generator client {
   provider = "prisma-client-js"
@@ -15,178 +20,320 @@ enum StopType {
   STATION
   CHECKPOINT
   REST_STOP
+  BOARDING_POINT
+  DROP_OFF_POINT
+  INTERMEDIATE_STOP
 }
 
-// 1. Company (Operator Entity)
+// =========================================================================
+// 1. COMPANY & MULTI-TENANT ARCHITECTURE
+// =========================================================================
 model Company {
   id                  String   @id @default(cuid())
+  name                String   @default("Abyssinia Bus S.C.")
   legalName           String
-  legalNameAm         String
+  legalNameAm         String   // Amharic script name: አቢሲኒያ አውቶቡስ አ.ማ.
   tradeName           String
-  tinNumber           String   @unique
-  commercialRegNo     String
+  tinNumber           String   @unique // Ethiopian Tax Identification Number (10 digits)
+  commercialRegNo     String   // Ministry of Trade registration
   headquartersAddress String
   headquartersPhone   String
   supportEmail        String
   websiteUrl          String?
+  logoUrl             String?
+  country             String   @default("Ethiopia")
+  currency            String   @default("ETB")
+  timezone            String   @default("Africa/Addis_Ababa")
+  status              String   @default("ACTIVE")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
   branches            Branch[]
+  busTypes            BusType[]
   buses               Bus[]
   drivers             Driver[]
   stops               Stop[]
   routes              Route[]
   trips               Trip[]
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  spareParts          SparePart[]
 }
 
-// 2. Branch (Terminal / Ticket Office)
+// =========================================================================
+// 2. BRANCHES (TERMINALS / TICKET OFFICES)
+// =========================================================================
 model Branch {
   id           String      @id @default(cuid())
   companyId    String
   company      Company     @relation(fields: [companyId], references: [id])
+  name         String?     // Optional alias
   nameEn       String
   nameAm       String
+  code         String?     // e.g. "ADD-01", "BD-01"
   city         String
-  terminalArea String
+  terminalArea String      // e.g. "Autobus Tera", "Meskel Square", "Kality"
   phone        String
+  email        String?
   address      String
+  latitude     Decimal?    @db.Decimal(10, 7)
+  longitude    Decimal?    @db.Decimal(10, 7)
+  status       String      @default("ACTIVE")
   managerName  String?
-  users        User[]
-  bookings     Booking[]
-  cashShifts   CashShift[]
   createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @default(now()) @updatedAt
+
+  users            User[]
+  bookings         Booking[]
+  cashShifts       CashShift[]
+  fuelTransactions FuelTransaction[]
+  busesStationed   Bus[]             @relation("BranchStationedBuses")
+
+  @@index([companyId])
 }
 
-// 3. User & Role
+// =========================================================================
+// 3. USERS & ROLES
+// =========================================================================
 model User {
   id           String      @id @default(cuid())
   email        String      @unique
+  phone        String
   passwordHash String
   fullName     String
-  phone        String
-  role         String // SUPER_ADMIN | BRANCH_MANAGER | TICKET_AGENT | DISPATCHER | CONDUCTOR | ACCOUNTANT | PASSENGER
+  role         String      // SUPER_ADMIN | COMPANY_OWNER | OPERATIONS_MGR | DISPATCHER | BRANCH_MANAGER | TICKET_AGENT | CONDUCTOR | DRIVER | FLEET_MANAGER | MECHANIC | FINANCE_OFFICER | ACCOUNTANT | CUSTOMER_SUPPORT | PASSENGER
   branchId     String?
   branch       Branch?     @relation(fields: [branchId], references: [id])
   active       Boolean     @default(true)
-  bookings     Booking[]
-  cashShifts   CashShift[]
-  boardings    Boarding[]
-  auditLogs    AuditLog[]
+  lastLoginAt  DateTime?
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
+
+  bookings         Booking[]
+  cashShifts       CashShift[]
+  boardings        Boarding[]
+  auditLogs        AuditLog[]
+  passengers       Passenger[]
+  drivers          Driver[]
+  assignedTickets  SupportTicket[]     @relation("AssignedSupportAgent")
+  maintenanceJobs  MaintenanceRecord[] @relation("AssignedMechanic")
+  notifications    Notification[]
+
+  @@index([branchId])
+  @@index([role])
 }
 
-// 4. Driver
-model Driver {
-  id              String   @id @default(cuid())
-  companyId       String
-  company         Company  @relation(fields: [companyId], references: [id])
-  fullName        String
-  phone           String
-  licenseNumber   String   @unique
-  experienceYears Int      @default(5)
-  status          String   @default("AVAILABLE") // AVAILABLE | ON_TRIP | OFF_DUTY | SICK
-  trips           Trip[]
-  createdAt       DateTime @default(now())
+// =========================================================================
+// 4. PASSENGERS
+// =========================================================================
+model Passenger {
+  id                    String             @id @default(cuid())
+  userId                String?
+  user                  User?              @relation(fields: [userId], references: [id])
+  firstName             String?
+  lastName              String?
+  fullName              String
+  phone                 String             @unique
+  email                 String?
+  nationality           String             @default("Ethiopian")
+  dateOfBirth           DateTime?
+  idType                String?            @default("KEBELE_ID") // KEBELE_ID | NATIONAL_ID | PASSPORT
+  nationalIdNumber      String?            // Kebele ID or Fayda ID
+  passportNumber        String?
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @default(now()) @updatedAt
+
+  bookingPassengers     BookingPassenger[]
+  reservations          Reservation[]
+  supportTickets        SupportTicket[]
+  boardings             Boarding[]
 }
 
-// 5. Bus & Seat
+// =========================================================================
+// 5. BUS TYPES, BUSES & SEATS
+// =========================================================================
+model BusType {
+  id           String   @id @default(cuid())
+  companyId    String
+  company      Company  @relation(fields: [companyId], references: [id])
+  name         String   // e.g. "Golden Dragon 45-seat Luxury", "Yutong 51-seat Standard"
+  manufacturer String   // e.g. "Yutong", "Golden Dragon", "Zhongtong", "Scania"
+  model        String   // e.g. "ZK6122H"
+  capacity     Int      @default(45)
+  description  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+
+  buses        Bus[]
+  schedules    Schedule[]
+
+  @@index([companyId])
+}
+
 model Bus {
-  id          String   @id @default(cuid())
-  companyId   String
-  company     Company  @relation(fields: [companyId], references: [id])
-  plateNumber String   @unique
-  sideNumber  String   @unique
-  busModel    String
-  busType     String // LUXURY_2X2 | STANDARD_2X3
-  totalSeats  Int      @default(45)
-  amenities   String   @default("AC,WiFi,Reclining Seats,Charging Ports")
-  status      String   @default("AVAILABLE") // AVAILABLE | ASSIGNED | MAINTENANCE | OUT_OF_SERVICE
-  seats       Seat[]
-  trips       Trip[]
-  createdAt   DateTime @default(now())
+  id               String       @id @default(cuid())
+  companyId        String
+  company          Company      @relation(fields: [companyId], references: [id])
+  busTypeId        String?
+  busTypeRef       BusType?     @relation(fields: [busTypeId], references: [id])
+  fleetNumber      String?      // e.g. "FLT-023"
+  plateNumber      String       @unique // e.g. "ET-3-A99102"
+  sideNumber       String       @unique // e.g. "SB-023"
+  vin              String?      // Vehicle Identification Number / Chassis
+  modelYear        Int?         @default(2024)
+  busModel         String
+  busType          String       // LUXURY_2X2 | STANDARD_2X3
+  totalSeats       Int          @default(45)
+  currentMileage   Int          @default(0)
+  fuelType         String       @default("DIESEL")
+  amenities        String       @default("AC,WiFi,Reclining Seats,Charging Ports")
+  status           String       @default("AVAILABLE") // AVAILABLE | ASSIGNED | IN_TRIP | MAINTENANCE | BREAKDOWN | INACTIVE | RETIRED
+  currentBranchId  String?
+  currentBranch    Branch?      @relation("BranchStationedBuses", fields: [currentBranchId], references: [id])
+  gpsDeviceId      String?
+  insuranceExpiry  DateTime?
+  inspectionExpiry DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @default(now()) @updatedAt
+
+  seats            Seat[]
+  trips            Trip[]
+  gpsLocations     GPSLocation[]
+  incidents        IncidentReport[]
+  maintenanceJobs  MaintenanceRecord[]
+  fuelTransactions FuelTransaction[]
+  tires            Tire[]
+
+  @@index([companyId])
+  @@index([status])
 }
 
 model Seat {
   id               String            @id @default(cuid())
   busId            String
   bus              Bus               @relation(fields: [busId], references: [id], onDelete: Cascade)
-  seatNumber       String
+  seatNumber       String            // e.g. "01A", "12D"
   row              Int
   column           Int
   columnLetter     String
+  seatType         String            @default("REGULAR") // REGULAR | VIP | ACCESSIBLE | DRIVER | CONDUCTOR
   isWindow         Boolean           @default(false)
   isAisle          Boolean           @default(false)
   isBackRow        Boolean           @default(false)
   status           String            @default("AVAILABLE") // AVAILABLE | BLOCKED
   active           Boolean           @default(true)
+
   tripSegmentSeats TripSegmentSeat[]
 
   @@unique([busId, seatNumber])
+  @@index([busId])
 }
 
-// 6. Stop
+// =========================================================================
+// 6. DRIVERS & ASSIGNMENTS
+// =========================================================================
+model Driver {
+  id              String   @id @default(cuid())
+  companyId       String
+  company         Company  @relation(fields: [companyId], references: [id])
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id])
+  fullName        String
+  phone           String
+  licenseNumber   String   @unique // Grade 5 Public Transport
+  licenseClass    String   @default("GRADE_5")
+  licenseExpiry   DateTime?
+  experienceYears Int      @default(5)
+  status          String   @default("AVAILABLE") // AVAILABLE | ON_TRIP | OFF_DUTY | SICK
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  trips               Trip[]
+  driverAssignments   TripDriverAssignment[]
+  incidents           IncidentReport[]
+  gpsLocations        GPSLocation[]
+  fuelTransactions    FuelTransaction[]
+
+  @@index([companyId])
+}
+
+model TripDriverAssignment {
+  id           String    @id @default(cuid())
+  tripId       String
+  trip         Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  driverId     String
+  driver       Driver    @relation(fields: [driverId], references: [id])
+  role         String    @default("MAIN_DRIVER") // MAIN_DRIVER | RELIEF_DRIVER | CONDUCTOR
+  assignedAt   DateTime  @default(now())
+  unassignedAt DateTime?
+
+  @@index([tripId])
+  @@index([driverId])
+}
+
+// =========================================================================
+// 7. NETWORK: STOPS, ROUTES & SCHEDULES
+// =========================================================================
 model Stop {
   id        String   @id @default(cuid())
   companyId String
+  company   Company  @relation(fields: [companyId], references: [id])
   name      String
-  code      String
+  code      String   // e.g. "ADD", "BHR", "DS", "HAW"
   city      String?
   address   String?
   latitude  Decimal? @db.Decimal(10, 7)
   longitude Decimal? @db.Decimal(10, 7)
-  type      StopType
+  type      StopType @default(TERMINAL)
   status    String   @default("ACTIVE")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  company Company @relation(fields: [companyId], references: [id])
-
-  originRoutes      Route[]     @relation("RouteOrigin")
-  destinationRoutes Route[]     @relation("RouteDestination")
+  originRoutes      Route[]       @relation("RouteOrigin")
+  destinationRoutes Route[]       @relation("RouteDestination")
   routeStops        RouteStop[]
-
-  tripSegmentsFrom TripSegment[] @relation("TripSegmentFrom")
-  tripSegmentsTo   TripSegment[] @relation("TripSegmentTo")
+  tripSegmentsFrom  TripSegment[] @relation("TripSegmentFrom")
+  tripSegmentsTo    TripSegment[] @relation("TripSegmentTo")
 
   @@unique([companyId, code])
   @@index([companyId])
 }
 
-// 7. Route
 model Route {
   id                   String   @id @default(cuid())
   companyId            String
+  company              Company  @relation(fields: [companyId], references: [id])
   originStopId         String
   destinationStopId    String
-  routeCode            String
+  routeCode            String   // e.g. "RT-ADD-BHR"
   distanceKm           Decimal? @db.Decimal(10, 2)
   estimatedDurationMin Int?
   status               String   @default("ACTIVE")
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
-  company Company @relation(fields: [companyId], references: [id])
-
-  originStop      Stop @relation("RouteOrigin", fields: [originStopId], references: [id])
-  destinationStop Stop @relation("RouteDestination", fields: [destinationStopId], references: [id])
-
-  routeStops RouteStop[]
-  schedules  Schedule[]
-  trips      Trip[]
+  originStop      Stop        @relation("RouteOrigin", fields: [originStopId], references: [id])
+  destinationStop Stop        @relation("RouteDestination", fields: [destinationStopId], references: [id])
+  routeStops      RouteStop[]
+  schedules       Schedule[]
+  trips           Trip[]
 
   @@unique([companyId, routeCode])
   @@index([companyId])
 }
 
 model RouteStop {
-  id             String   @id @default(cuid())
-  routeId        String
-  stopId         String
-  sequenceNumber Int
-  distanceKm     Decimal? @db.Decimal(10, 2)
-  durationMin    Int?
-  createdAt      DateTime @default(now())
+  id                     String   @id @default(cuid())
+  routeId                String
+  stopId                 String
+  sequenceNumber         Int
+  distanceKm             Decimal? @db.Decimal(10, 2)
+  durationMin            Int?
+  arrivalOffsetMinutes   Int?     @default(0)
+  departureOffsetMinutes Int?     @default(0)
+  boardingAllowed        Boolean  @default(true)
+  dropoffAllowed         Boolean  @default(true)
+  createdAt              DateTime @default(now())
 
   route Route @relation(fields: [routeId], references: [id], onDelete: Cascade)
   stop  Stop  @relation(fields: [stopId], references: [id])
@@ -197,33 +344,46 @@ model RouteStop {
 }
 
 model Schedule {
-  id            String   @id @default(cuid())
-  routeId       String
-  departureTime String
-  daysOfWeek    String   @default("DAILY")
-  status        String   @default("ACTIVE")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                   String   @id @default(cuid())
+  routeId              String
+  route                Route    @relation(fields: [routeId], references: [id])
+  departureTime        String   // e.g. "05:00 AM"
+  daysOfWeek           String   @default("DAILY")
+  defaultPrice         Float?
+  defaultBusTypeId     String?
+  defaultBusType       BusType? @relation(fields: [defaultBusTypeId], references: [id])
+  boardingTimeMinutes  Int      @default(30)
+  status               String   @default("ACTIVE")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
-  route Route  @relation(fields: [routeId], references: [id])
   trips Trip[]
 
   @@index([routeId])
 }
 
-// 8. Trip & TripSegments & Seat Inventory
+// =========================================================================
+// 8. MASTER TRIPS & SEGMENT SEAT INVENTORY ENGINE
+// =========================================================================
 model Trip {
   id                 String    @id @default(cuid())
   companyId          String
+  company            Company   @relation(fields: [companyId], references: [id])
   routeId            String
+  route              Route     @relation(fields: [routeId], references: [id])
   scheduleId         String?
+  schedule           Schedule? @relation(fields: [scheduleId], references: [id])
   busId              String
+  bus                Bus       @relation(fields: [busId], references: [id])
   driverId           String?
+  driver             Driver?   @relation(fields: [driverId], references: [id])
   tripDate           DateTime
   scheduledDeparture DateTime
   scheduledArrival   DateTime?
+  actualDeparture    DateTime?
+  actualArrival      DateTime?
   price              Float
-  status             String    @default("SCHEDULED") // SCHEDULED | OPEN | IN_TRANSIT | COMPLETED | CANCELLED
+  status             String    @default("SCHEDULED") // DRAFT | SCHEDULED | OPEN | BOARDING | DEPARTED | IN_TRANSIT | ARRIVED | DELAYED | CANCELLED | COMPLETED
   delayReason        String?
   delayMinutes       Int?      @default(0)
   currentLatitude    Float?
@@ -231,40 +391,38 @@ model Trip {
   currentSpeedKmH    Float?
   currentMilestone   String?
   lastGpsPingAt      DateTime?
+  createdBy          String?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  company      Company          @relation(fields: [companyId], references: [id])
-  route        Route            @relation(fields: [routeId], references: [id])
-  schedule     Schedule?        @relation(fields: [scheduleId], references: [id])
-  bus          Bus              @relation(fields: [busId], references: [id])
-  driver       Driver?          @relation(fields: [driverId], references: [id])
-  tripSegments TripSegment[]
-  reservations Reservation[]
-  bookings     Booking[]
-  tickets      Ticket[]
-  boardings    Boarding[]
-  incidents    IncidentReport[]
-  seatLocks    SeatLock[]
+  tripSegments       TripSegment[]
+  driverAssignments  TripDriverAssignment[]
+  reservations       Reservation[]
+  bookings           Booking[]
+  tickets            Ticket[]
+  boardings          Boarding[]
+  incidents          IncidentReport[]
+  seatLocks          SeatLock[]
+  gpsLocations       GPSLocation[]
+  fuelTransactions   FuelTransaction[]
 
   @@index([companyId])
   @@index([routeId])
   @@index([busId])
+  @@index([tripDate, status])
 }
 
 model TripSegment {
   id                 String    @id @default(cuid())
   tripId             String
+  trip               Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
   fromStopId         String
+  fromStop           Stop      @relation("TripSegmentFrom", fields: [fromStopId], references: [id])
   toStopId           String
+  toStop             Stop      @relation("TripSegmentTo", fields: [toStopId], references: [id])
   sequenceNumber     Int
   scheduledDeparture DateTime?
   scheduledArrival   DateTime?
-
-  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
-
-  fromStop Stop @relation("TripSegmentFrom", fields: [fromStopId], references: [id])
-  toStop   Stop @relation("TripSegmentTo", fields: [toStopId], references: [id])
 
   seats           TripSegmentSeat[]
   bookingSegments BookingSegment[]
@@ -274,79 +432,105 @@ model TripSegment {
 }
 
 model TripSegmentSeat {
-  id            String    @id @default(cuid())
+  id            String       @id @default(cuid())
   tripSegmentId String
+  tripSegment   TripSegment  @relation(fields: [tripSegmentId], references: [id], onDelete: Cascade)
   busSeatId     String
-  status        String    @default("AVAILABLE") // AVAILABLE | HELD | BOOKED | BLOCKED
+  busSeat       Seat         @relation(fields: [busSeatId], references: [id])
+  status        String       @default("AVAILABLE") // AVAILABLE | HELD | PAYMENT_PENDING | CONFIRMED | CHECKED_IN | BOARDED | NO_SHOW | CANCELLED | BLOCKED
+  price         Float?
   reservationId String?
+  reservation   Reservation? @relation(fields: [reservationId], references: [id])
   heldUntil     DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  tripSegment TripSegment  @relation(fields: [tripSegmentId], references: [id], onDelete: Cascade)
-  busSeat     Seat         @relation(fields: [busSeatId], references: [id])
-  reservation Reservation? @relation(fields: [reservationId], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   @@unique([tripSegmentId, busSeatId])
-  @@index([tripSegmentId])
+  @@index([tripSegmentId, status])
   @@index([busSeatId])
+  @@index([heldUntil])
 }
 
-// 9. Reservation (Temporary Seat Hold)
+// =========================================================================
+// 9. RESERVATIONS & ATOMIC HOLDS
+// =========================================================================
 model Reservation {
   id          String   @id @default(cuid())
   tripId      String
+  trip        Trip     @relation(fields: [tripId], references: [id])
   passengerId String?
+  passenger   Passenger? @relation(fields: [passengerId], references: [id])
   status      String   @default("ACTIVE") // ACTIVE | EXPIRED | CONFIRMED | CANCELLED
   expiresAt   DateTime
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  trip      Trip              @relation(fields: [tripId], references: [id])
-  passenger Passenger?        @relation(fields: [passengerId], references: [id])
-  seats     TripSegmentSeat[]
-  bookings  Booking[]
+  seats       TripSegmentSeat[]
+  bookings    Booking[]
 
   @@index([tripId])
+  @@index([status, expiresAt])
 }
 
-// 10. Booking & BookingSegment
+model SeatLock {
+  id              String   @id @default(cuid())
+  tripId          String
+  trip            Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  seatNumber      String
+  lockedBySession String
+  expiresAt       DateTime
+  createdAt       DateTime @default(now())
+
+  @@unique([tripId, seatNumber])
+  @@index([expiresAt])
+}
+
+// =========================================================================
+// 10. BOOKINGS, PASSENGERS & PAYMENTS
+// =========================================================================
 model Booking {
   id               String   @id @default(cuid())
-  bookingReference String   @unique
+  bookingReference String   @unique // e.g. "BK-20261005-00125"
   tripId           String
+  trip             Trip     @relation(fields: [tripId], references: [id])
   reservationId    String?
+  reservation      Reservation? @relation(fields: [reservationId], references: [id])
   customerName     String
   customerPhone    String
   customerEmail    String?
+  channel          String   @default("PASSENGER_APP") // PASSENGER_APP | WEBSITE | COUNTER | PHONE | TRAVEL_AGENT | EXTERNAL_OTA
   bookedByUserId   String?
+  bookedByUser     User?    @relation(fields: [bookedByUserId], references: [id])
   bookedByRole     String   @default("PASSENGER")
   branchId         String?
+  branch           Branch?  @relation(fields: [branchId], references: [id])
+  subtotalETB      Float?
+  discountETB      Float?   @default(0)
+  feesETB          Float?   @default(0)
   totalAmountETB   Float
-  paymentStatus    String   @default("PENDING")
+  currency         String   @default("ETB")
+  paymentStatus    String   @default("PENDING") // PENDING | HELD | PAYMENT_PENDING | PAID | CONFIRMED | CANCELLED | REFUNDED | EXPIRED | COMPLETED
+  expiresAt        DateTime?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  trip            Trip               @relation(fields: [tripId], references: [id])
-  bookedByUser    User?              @relation(fields: [bookedByUserId], references: [id])
-  branch          Branch?            @relation(fields: [branchId], references: [id])
-  reservation     Reservation?       @relation(fields: [reservationId], references: [id])
-  bookingSegments BookingSegment[]
-  passengers      BookingPassenger[]
-  payments        Payment[]
-  tickets         Ticket[]
+  bookingSegments  BookingSegment[]
+  passengers       BookingPassenger[]
+  payments         Payment[]
+  tickets          Ticket[]
+  supportTickets   SupportTicket[]
 
   @@index([tripId])
+  @@index([customerPhone])
+  @@index([branchId])
 }
 
 model BookingSegment {
-  id            String   @id @default(cuid())
+  id            String      @id @default(cuid())
   bookingId     String
+  booking       Booking     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   tripSegmentId String
-  createdAt     DateTime @default(now())
-
-  booking     Booking     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  tripSegment TripSegment @relation(fields: [tripSegmentId], references: [id])
+  tripSegment   TripSegment @relation(fields: [tripSegmentId], references: [id])
 
   @@unique([bookingId, tripSegmentId])
   @@index([bookingId])
@@ -363,40 +547,55 @@ model BookingPassenger {
   passengerName     String
   passengerPhone    String
   passengerIdNumber String
+  passportNumber    String?
+  fareETB           Float?     @default(850.00)
   ticket            Ticket?
+
+  @@index([bookingId])
 }
 
-// 11. Passenger Registry
-model Passenger {
-  id                    String             @id @default(cuid())
-  fullName              String
-  phone                 String             @unique
-  nationalIdNumber      String?
-  emergencyContactName  String?
-  emergencyContactPhone String?
-  bookingPassengers     BookingPassenger[]
-  reservations          Reservation[]
-  createdAt             DateTime           @default(now())
-}
-
-// 12. Payment
 model Payment {
   id                   String   @id @default(cuid())
   bookingId            String
   booking              Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  paymentReference     String?  // e.g. "PAY-7832"
   amountETB            Float
-  paymentMethod        String // CASH | TELEBIRR | CBE_BIRR | AWASH_BIRR | CHAPA_GATEWAY
-  transactionReference String?
+  currency             String   @default("ETB")
+  provider             String?  @default("LOCAL_CASH") // TELEBIRR | CBE_BIRR | AWASH_BIRR | CHAPA | CASH
+  paymentMethod        String   // CASH | CARD | BANK | MOBILE_MONEY | TELEBIRR | CBE_BIRR | CHAPA_GATEWAY
+  transactionReference String?  // External telecom/bank ID
+  providerTxId         String?
   cashTenderedETB      Float?
   changeReturnedETB    Float?
-  status               String   @default("COMPLETED")
+  status               String   @default("COMPLETED") // PENDING | PROCESSING | SUCCESS | COMPLETED | FAILED | REFUNDED | PARTIALLY_REFUNDED
   paidAt               DateTime @default(now())
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @default(now()) @updatedAt
+
+  events               PaymentEvent[]
+
+  @@index([bookingId])
+  @@index([transactionReference])
 }
 
-// 13. Ticket
+model PaymentEvent {
+  id                String   @id @default(cuid())
+  paymentId         String
+  payment           Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  eventType         String   // PAYMENT_INITIATED | PAYMENT_SUCCESS | PAYMENT_FAILED | PAYMENT_REVERSED
+  providerReference String?
+  payloadJson       String?  // Raw webhook payload string
+  createdAt         DateTime @default(now())
+
+  @@index([paymentId])
+}
+
+// =========================================================================
+// 11. TICKETING & BOARDING
+// =========================================================================
 model Ticket {
   id                 String            @id @default(cuid())
-  ticketNumber       String            @unique
+  ticketNumber       String            @unique // e.g. "TCK-20261005-0125-01"
   bookingId          String
   booking            Booking           @relation(fields: [bookingId], references: [id])
   bookingPassengerId String?           @unique
@@ -408,64 +607,180 @@ model Ticket {
   passengerPhone     String
   passengerIdNumber  String
   fareETB            Float
-  qrHash             String            @unique
-  status             String            @default("ISSUED") // ISSUED | BOARDED | NO_SHOW | CANCELLED
+  qrHash             String            @unique // Signed cryptographic HMAC-SHA256
+  qrToken            String?           // Obfuscated client token
+  status             String            @default("ISSUED") // ISSUED | USED | CHECKED_IN | BOARDED | NO_SHOW | CANCELLED | EXPIRED
+  checkedInAt        DateTime?
   boardedAt          DateTime?
+  cancelledAt        DateTime?
   boardingTerminal   String?
   dropoffTerminal    String?
-  boardings          Boarding[]
   createdAt          DateTime          @default(now())
+
+  boardings          Boarding[]
+
+  @@index([qrHash])
+  @@index([tripId, status])
 }
 
-// 14. Boarding
 model Boarding {
-  id               String   @id @default(cuid())
+  id               String     @id @default(cuid())
   ticketId         String
-  ticket           Ticket   @relation(fields: [ticketId], references: [id])
+  ticket           Ticket     @relation(fields: [ticketId], references: [id])
   tripId           String
-  trip             Trip     @relation(fields: [tripId], references: [id])
+  trip             Trip       @relation(fields: [tripId], references: [id])
+  passengerId      String?
+  passenger        Passenger? @relation(fields: [passengerId], references: [id])
   conductorId      String?
-  conductor        User?    @relation(fields: [conductorId], references: [id])
-  scannedAt        DateTime @default(now())
+  conductor        User?      @relation(fields: [conductorId], references: [id])
+  scannedAt        DateTime   @default(now())
   terminalLocation String?
-  status           String   @default("APPROVED")
+  status           String     @default("APPROVED") // APPROVED | REJECTED_DUPLICATE | REJECTED_WRONG_TRIP
+
+  @@index([ticketId])
+  @@index([tripId])
 }
 
-// 15. Auxiliary Models
-model Notification {
-  id               String   @id @default(cuid())
-  recipientPhone   String
-  channel          String   @default("SMS")
-  message          String
-  status           String   @default("SENT")
-  providerResponse String?
-  sentAt           DateTime @default(now())
+// =========================================================================
+// 12. OPERATIONS, TELEMETRY & INCIDENTS
+// =========================================================================
+model GPSLocation {
+  id             String   @id @default(cuid())
+  tripId         String
+  trip           Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  busId          String
+  bus            Bus      @relation(fields: [busId], references: [id])
+  driverId       String?
+  driver         Driver?  @relation(fields: [driverId], references: [id])
+  latitude       Float
+  longitude      Float
+  speedKmH       Float
+  headingDeg     Float?
+  accuracyMeters Float?   @default(5.0)
+  recordedAt     DateTime @default(now())
+
+  @@index([tripId, recordedAt])
+  @@index([busId])
 }
 
-model AuditLog {
-  id          String   @id @default(cuid())
-  userId      String?
-  user        User?    @relation(fields: [userId], references: [id])
-  action      String
-  entityName  String
-  entityId    String?
-  detailsJson String?
-  ipAddress   String?
-  createdAt   DateTime @default(now())
+model IncidentReport {
+  id                 String    @id @default(cuid())
+  tripId             String
+  trip               Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  busId              String?
+  bus                Bus?      @relation(fields: [busId], references: [id])
+  driverId           String?
+  driver             Driver?   @relation(fields: [driverId], references: [id])
+  reportedByDriverId String?
+  driverName         String
+  incidentType       String    // BREAKDOWN | ACCIDENT | TRAFFIC | MEDICAL | SECURITY | PASSENGER | CHECKPOINT | OTHER
+  severity           String    @default("MEDIUM") // LOW | MEDIUM | HIGH | CRITICAL
+  description        String
+  locationName       String?
+  latitude           Float?
+  longitude          Float?
+  status             String    @default("OPEN") // OPEN | INVESTIGATING | RESOLVED
+  reportedAt         DateTime  @default(now())
+  resolvedAt         DateTime?
+  resolved           Boolean   @default(false)
+
+  @@index([tripId])
 }
 
-model SeatLock {
+// =========================================================================
+// 13. FLEET MAINTENANCE, TIRES & FUEL
+// =========================================================================
+model MaintenanceRecord {
+  id            String    @id @default(cuid())
+  busId         String
+  bus           Bus       @relation(fields: [busId], references: [id], onDelete: Cascade)
+  type          String    // PREVENTIVE | CORRECTIVE | EMERGENCY | INSPECTION
+  description   String
+  odometerKm    Int
+  priority      String    @default("MEDIUM") // LOW | MEDIUM | HIGH | CRITICAL
+  status        String    @default("OPEN")   // OPEN | IN_PROGRESS | WAITING_PARTS | COMPLETED
+  reportedBy    String?
+  assignedToId  String?
+  assignedTo    User?     @relation("AssignedMechanic", fields: [assignedToId], references: [id])
+  startedAt     DateTime?
+  completedAt   DateTime?
+  totalCostETB  Float     @default(0)
+  createdAt     DateTime  @default(now())
+
+  partsUsed     MaintenancePart[]
+
+  @@index([busId])
+}
+
+model SparePart {
+  id              String            @id @default(cuid())
+  companyId       String
+  company         Company           @relation(fields: [companyId], references: [id])
+  name            String
+  partNumber      String            @unique
+  quantity        Int               @default(0)
+  minimumQuantity Int               @default(5)
+  unitCostETB     Float
+  supplier        String?
+  status          String            @default("IN_STOCK")
+
+  maintenanceParts MaintenancePart[]
+
+  @@index([companyId])
+}
+
+model MaintenancePart {
+  id            String            @id @default(cuid())
+  maintenanceId String
+  maintenance   MaintenanceRecord @relation(fields: [maintenanceId], references: [id], onDelete: Cascade)
+  partId        String
+  part          SparePart         @relation(fields: [partId], references: [id])
+  quantity      Int               @default(1)
+  unitCostETB   Float
+  totalCostETB  Float
+
+  @@index([maintenanceId])
+}
+
+model Tire {
+  id           String   @id @default(cuid())
+  busId        String
+  bus          Bus      @relation(fields: [busId], references: [id], onDelete: Cascade)
+  serialNumber String   @unique
+  position     String   // FRONT_LEFT | FRONT_RIGHT | REAR_OUTER_LEFT | REAR_INNER_LEFT | REAR_INNER_RIGHT | REAR_OUTER_RIGHT
+  treadDepthMm Decimal  @db.Decimal(4, 2) // e.g. 12.50 mm
+  installedKm  Int
+  status       String   @default("ACTIVE") // ACTIVE | RETREADED | SCRAPPED
+
+  @@index([busId])
+}
+
+model FuelTransaction {
   id              String   @id @default(cuid())
-  tripId          String
-  trip            Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
-  seatNumber      String
-  lockedBySession String
-  expiresAt       DateTime
+  busId           String
+  bus             Bus      @relation(fields: [busId], references: [id])
+  driverId        String?
+  driver          Driver?  @relation(fields: [driverId], references: [id])
+  tripId          String?
+  trip            Trip?    @relation(fields: [tripId], references: [id])
+  branchId        String?
+  branch          Branch?  @relation(fields: [branchId], references: [id])
+  liters          Float
+  pricePerLiter   Float
+  totalCostETB    Float
+  odometerKm      Int
+  receiptNumber   String?
+  fuelStation     String?
+  transactionDate DateTime @default(now())
   createdAt       DateTime @default(now())
 
-  @@unique([tripId, seatNumber])
+  @@index([busId])
+  @@index([tripId])
 }
 
+// =========================================================================
+// 14. CASH SHIFTS, AUDIT LOGS, NOTIFICATIONS & SUPPORT
+// =========================================================================
 model CashShift {
   id                    String    @id @default(cuid())
   agentId               String
@@ -479,22 +794,65 @@ model CashShift {
   ticketsCount          Int       @default(0)
   cancelledTicketsCount Int       @default(0)
   refundsETB            Float     @default(0)
-  status                String    @default("OPEN")
+  status                String    @default("OPEN") // OPEN | CLOSED | RECONCILED
   notes                 String?
+
+  @@index([agentId])
+  @@index([branchId])
 }
 
-model IncidentReport {
-  id                 String   @id @default(cuid())
-  tripId             String
-  trip               Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
-  reportedByDriverId String?
-  driverName         String
-  incidentType       String
-  severity           String   @default("MEDIUM")
-  description        String
-  locationName       String?
-  latitude           Float?
-  longitude          Float?
-  reportedAt         DateTime @default(now())
-  resolved           Boolean  @default(false)
+model AuditLog {
+  id            String   @id @default(cuid())
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id])
+  action        String   // e.g. "SEAT_LOCK", "BOOKING_ISSUED", "CANCELLATION", "RESCHEDULE", "REPRINT"
+  entityName    String   // e.g. "Booking", "TripSegmentSeat", "CashShift"
+  entityId      String?
+  oldValuesJson String?
+  newValuesJson String?
+  detailsJson   String?  // Legacy compatibility
+  ipAddress     String?
+  deviceInfo    String?
+  createdAt     DateTime @default(now())
+
+  @@index([entityName, entityId])
+  @@index([userId])
+}
+
+model Notification {
+  id               String    @id @default(cuid())
+  userId           String?
+  user             User?     @relation(fields: [userId], references: [id])
+  recipientPhone   String
+  type             String?   @default("BOOKING_CONFIRMATION")
+  title            String?
+  channel          String    @default("SMS") // SMS | PUSH | EMAIL | WHATSAPP
+  message          String
+  status           String    @default("SENT") // PENDING | SENT | FAILED
+  providerResponse String?
+  scheduledAt      DateTime?
+  sentAt           DateTime  @default(now())
+
+  @@index([recipientPhone])
+}
+
+model SupportTicket {
+  id           String    @id @default(cuid())
+  passengerId  String?
+  passenger    Passenger? @relation(fields: [passengerId], references: [id])
+  bookingId    String?
+  booking      Booking?  @relation(fields: [bookingId], references: [id])
+  category     String    // BOOKING | PAYMENT | CANCELLATION | DELAY | LOST_ITEM | COMPLAINT
+  subject      String
+  description  String
+  priority     String    @default("MEDIUM") // LOW | MEDIUM | HIGH | URGENT
+  status       String    @default("OPEN")   // OPEN | IN_PROGRESS | WAITING_CUSTOMER | RESOLVED | CLOSED
+  assignedToId String?
+  assignedTo   User?     @relation("AssignedSupportAgent", fields: [assignedToId], references: [id])
+  createdAt    DateTime  @default(now())
+  resolvedAt   DateTime?
+
+  @@index([passengerId])
+  @@index([bookingId])
+  @@index([status])
 }
