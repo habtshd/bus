@@ -4,23 +4,34 @@
   "description": "Backend API for Ethiopian Intercity Bus Platform",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "tsx watch src/main.ts",
+    "dev:express": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "tsx src/main.ts",
+    "start:express": "node dist/server.js",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "tsx src/db/seed.ts",
-    "test:concurrency": "tsx src/test/concurrency.test.ts"
+    "test:concurrency": "tsx src/test/concurrency.test.ts",
+    "test:engine": "tsx src/modules/trips/trips-inventory-engine.spec.ts"
   },
   "dependencies": {
     "@bus/shared": "file:../../packages/shared",
+    "@nestjs/common": "^12.1.0",
+    "@nestjs/core": "^12.1.0",
+    "@nestjs/platform-express": "^12.1.0",
+    "@nestjs/schedule": "^12.0.2",
     "@prisma/client": "^5.14.0",
     "bcryptjs": "^2.4.3",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
-    "qrcode": "^1.5.3"
+    "qrcode": "^1.5.3",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
