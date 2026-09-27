@@ -7,6 +7,8 @@ import { OperationsDispatcher } from './components/OperationsDispatcher';
 import { CheckpointManifestView } from './components/CheckpointManifestView';
 import { ConductorBoardingScanner } from './components/ConductorBoardingScanner';
 import { ManagementDashboard } from './components/ManagementDashboard';
+import { PassengerMobileSimulator } from './components/PassengerMobileSimulator';
+import { DriverPortal } from './components/DriverPortal';
 
 export function App() {
   const [currentTab, setTab] = useState<AppTab>('passenger');
@@ -23,8 +25,10 @@ export function App() {
 
       <main style={{ flex: 1 }}>
         {currentTab === 'passenger' && <PassengerPortal isAmharic={isAmharic} />}
+        {currentTab === 'mobile-app' && <PassengerMobileSimulator isAmharic={isAmharic} />}
         {currentTab === 'my-bookings' && <MyBookingsView isAmharic={isAmharic} />}
         {currentTab === 'agent' && <AgentCounterPOS isAmharic={isAmharic} />}
+        {currentTab === 'driver' && <DriverPortal isAmharic={isAmharic} />}
         {currentTab === 'dispatch' && <OperationsDispatcher isAmharic={isAmharic} />}
         {currentTab === 'manifest' && <CheckpointManifestView isAmharic={isAmharic} />}
         {currentTab === 'conductor' && <ConductorBoardingScanner isAmharic={isAmharic} />}

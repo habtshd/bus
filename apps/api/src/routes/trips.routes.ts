@@ -264,4 +264,43 @@ router.patch('/:id/status', async (req: Request, res: Response) => {
   }
 });
 
+// PATCH /api/trips/:id/assign (Day 24 Dispatch: Management assigns/reassigns bus and driver)
+router.patch('/:id/assign', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { busId, driverName, driverPhone, conductorName, conductorPhone } = req.body;
+
+    const updateData: any = {};
+    if (busId) updateData.busId = busId;
+    if (driverName !== undefined) updateData.driverName = driverName;
+    if (driverPhone !== undefined) updateData.driverPhone = driverPhone;
+    if (conductorName !== undefined) updateData.conductorName = conductorName;
+    if (conductorPhone !== undefined) updateData.conductorPhone = conductorPhone;
+
+    const trip = await prisma.trip.update({
+      where: { id },
+      data: updateData,
+      include: {
+        route: {
+          include: {
+            originStation: true,
+            destinationStation: true
+          }
+        },
+        bus: true
+      }
+    });
+
+    return res.json({
+      success: true,
+      message: `Assignment updated for trip ${trip.tripCode}`,
+      trip
+    });
+  } catch (err: any) {
+    console.error('Assign trip error:', err);
+    return res.status(500).json({ error: 'Failed to update trip assignment' });
+  }
+});
+
 export default router;
+

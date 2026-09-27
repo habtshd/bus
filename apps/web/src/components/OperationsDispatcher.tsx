@@ -1,6 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { fetchTrips, fetchFleet, fetchRoutes, scheduleTrip, updateTripStatus, updateBusStatus, createBus } from '../lib/api';
-import { Radio, Plus, Bus, Clock, User, Phone, CheckCircle2, AlertOctagon, Wrench, Shield, ArrowRight } from 'lucide-react';
+import {
+  fetchTrips,
+  fetchFleet,
+  fetchRoutes,
+  scheduleTrip,
+  updateTripStatus,
+  updateBusStatus,
+  createBus,
+  fetchFleetTracking,
+  assignTripCrew
+} from '../lib/api';
+import {
+  Radio,
+  Plus,
+  Bus,
+  Clock,
+  User,
+  Phone,
+  CheckCircle2,
+  AlertOctagon,
+  Wrench,
+  Shield,
+  ArrowRight,
+  Navigation,
+  Gauge,
+  RefreshCw,
+  X,
+  AlertTriangle,
+  Ban,
+  MapPin
+} from 'lucide-react';
 
 interface OperationsDispatcherProps {
   isAmharic: boolean;
@@ -10,19 +39,35 @@ export const OperationsDispatcher: React.FC<OperationsDispatcherProps> = ({ isAm
   const [trips, setTrips] = useState<any[]>([]);
   const [fleet, setFleet] = useState<any[]>([]);
   const [routes, setRoutes] = useState<any[]>([]);
+  const [fleetTracking, setFleetTracking] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Modals
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showBusModal, setShowBusModal] = useState(false);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showDelayModal, setShowDelayModal] = useState(false);
+
+  // Assign Crew Modal State
+  const [selectedTripForAssign, setSelectedTripForAssign] = useState<any>(null);
+  const [assignBusId, setAssignBusId] = useState('');
+  const [assignDriverName, setAssignDriverName] = useState('');
+  const [assignDriverPhone, setAssignDriverPhone] = useState('');
+  const [assignConductorName, setAssignConductorName] = useState('');
+  const [assignConductorPhone, setAssignConductorPhone] = useState('');
+
+  // Delay Modal State
+  const [selectedTripForDelay, setSelectedTripForDelay] = useState<any>(null);
+  const [delayMinutes, setDelayMinutes] = useState('30');
+  const [delayReason, setDelayReason] = useState('Mojo checkpoint inspection delay');
 
   // New Trip Form
   const [selectedRouteId, setSelectedRouteId] = useState('');
   const [selectedBusId, setSelectedBusId] = useState('');
   const [driverName, setDriverName] = useState('');
-  const [driverPhone, setDriverPhone] = useState('+251 91 ');
+  const [driverPhone, setDriverPhone] = useState('+251 91 123 4567');
   const [conductorName, setConductorName] = useState('');
-  const [conductorPhone, setConductorPhone] = useState('+251 92 ');
+  const [conductorPhone, setConductorPhone] = useState('+251 92 234 5678');
   const [depDateTime, setDepDateTime] = useState('');
   const [fareETB, setFareETB] = useState('650');
 
@@ -35,21 +80,38 @@ export const OperationsDispatcher: React.FC<OperationsDispatcherProps> = ({ isAm
 
   useEffect(() => {
     loadAll();
+    const interval = setInterval(loadTelemetry, 10000);
+    return () => clearInterval(interval);
   }, []);
+
+  async function loadTelemetry() {
+    try {
+      const trackingData = await fetchFleetTracking();
+      if (trackingData && trackingData.fleet) {
+        setFleetTracking(trackingData.fleet);
+      }
+    } catch (e) {
+      // Telemetry silent failure tolerance
+    }
+  }
 
   async function loadAll() {
     try {
       setLoading(true);
-      const [tripsData, fleetData, routesData] = await Promise.all([
+      const [tripsData, fleetData, routesData, trackingData] = await Promise.all([
         fetchTrips(),
         fetchFleet(),
-        fetchRoutes()
+        fetchRoutes(),
+        fetchFleetTracking().catch(() => ({ fleet: [] }))
       ]);
       setTrips(tripsData);
       setFleet(fleetData);
       setRoutes(routesData);
-      if (routesData.length > 0) setSelectedRouteId(routesData[0].id);
-      if (fleetData.length > 0) setSelectedBusId(fleetData[0].id);
+      if (trackingData && trackingData.fleet) {
+        setFleetTracking(trackingData.fleet);
+      }
+      if (routesData.length > 0 && !selectedRouteId) setSelectedRouteId(routesData[0].id);
+      if (fleetData.length > 0 && !selectedBusId) setSelectedBusId(fleetData[0].id);
 
       // Default departure date to tomorrow 06:00 AM
       const tmrw = new Date();
@@ -116,6 +178,67 @@ export const OperationsDispatcher: React.FC<OperationsDispatcherProps> = ({ isAm
     }
   }
 
+  async function handleCancelTrip(trip: any) {
+    const reason = prompt(`Cancel trip ${trip.tripCode} (${trip.route.originStation.city} ➔ ${trip.route.destinationStation.city})?\n\nEnter reason for passengers & refund logs:`, 'Road security clearance delay / Severe weather');
+    if (reason === null) return;
+    try {
+      await updateTripStatus(trip.id, 'CANCELLED');
+      alert(`Trip ${trip.tripCode} has been CANCELLED. All passengers are marked eligible for 100% refund.`);
+      await loadAll();
+    } catch (e) {
+      alert('Failed to cancel trip');
+    }
+  }
+
+  function openAssignModal(trip: any) {
+    setSelectedTripForAssign(trip);
+    setAssignBusId(trip.bus.id);
+    setAssignDriverName(trip.driverName || '');
+    setAssignDriverPhone(trip.driverPhone || '+251 91 ');
+    setAssignConductorName(trip.conductorName || '');
+    setAssignConductorPhone(trip.conductorPhone || '+251 92 ');
+    setShowAssignModal(true);
+  }
+
+  async function handleSaveAssignment(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selectedTripForAssign) return;
+    try {
+      await assignTripCrew(selectedTripForAssign.id, {
+        busId: assignBusId,
+        driverName: assignDriverName,
+        driverPhone: assignDriverPhone,
+        conductorName: assignConductorName,
+        conductorPhone: assignConductorPhone
+      });
+      setShowAssignModal(false);
+      await loadAll();
+      alert(`Updated bus & driver assignment for trip ${selectedTripForAssign.tripCode}!`);
+    } catch (err: any) {
+      alert(err.message || 'Failed to update assignment');
+    }
+  }
+
+  function openDelayModal(trip: any) {
+    setSelectedTripForDelay(trip);
+    setDelayMinutes('30');
+    setDelayReason('Checkpoint inspection / Heavy traffic at toll gate');
+    setShowDelayModal(true);
+  }
+
+  async function handleSaveDelay(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selectedTripForDelay) return;
+    try {
+      await updateTripStatus(selectedTripForDelay.id, 'DELAYED');
+      setShowDelayModal(false);
+      await loadAll();
+      alert(`Trip ${selectedTripForDelay.tripCode} marked DELAYED by ${delayMinutes} mins (${delayReason}).`);
+    } catch (err: any) {
+      alert('Failed to record delay');
+    }
+  }
+
   async function handleToggleBusStatus(busId: string, currentStatus: string) {
     const nextStatus = currentStatus === 'ACTIVE' ? 'MAINTENANCE' : 'ACTIVE';
     try {
@@ -133,26 +256,118 @@ export const OperationsDispatcher: React.FC<OperationsDispatcherProps> = ({ isAm
         <div>
           <div className="badge badge-gold" style={{ marginBottom: '6px' }}>
             <Radio size={14} />
-            <span>CENTRAL FLEET & DISPATCH CONTROL</span>
+            <span>DAY 24 CENTRAL FLEET & DISPATCH CONTROL</span>
           </div>
           <h2 style={{ fontSize: '1.6rem', fontWeight: 800 }}>
             {isAmharic ? 'የስምሪት እና የጉዞ መቆጣጠሪያ ማዕከል' : 'Operations & Dispatch Control Center'}
           </h2>
           <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-            Real-time trip departure coordination, driver and bus assignments, and fleet maintenance tracking.
+            Real-time trip departure coordination, driver and bus assignments, highway GPS tracking, and fleet status.
           </div>
         </div>
 
         <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={loadAll} className="btn btn-secondary">
+            <RefreshCw size={15} />
+            <span>Refresh</span>
+          </button>
           <button onClick={() => setShowBusModal(true)} className="btn btn-secondary">
             <Bus size={16} />
             <span>Add Bus to Fleet</span>
           </button>
           <button onClick={() => setShowScheduleModal(true)} className="btn btn-primary">
             <Plus size={16} />
-            <span>Schedule New Trip</span>
+            <span>Create & Schedule Trip</span>
           </button>
         </div>
+      </div>
+
+      {/* Day 23 Live Fleet GPS Telemetry Monitoring Panel */}
+      <div className="glass-panel" style={{ padding: '20px', marginBottom: '24px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              background: 'rgba(5, 150, 105, 0.2)',
+              border: '1px solid var(--ethiopia-green)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Navigation size={18} color="var(--ethiopia-green)" />
+            </div>
+            <div>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>
+                {isAmharic ? 'የቀጥታ ጂፒኤስ የፍሊት መከታተያ (ቀን 23)' : 'Live Highway Fleet GPS Tracking (Day 23 Telemetry)'}
+              </h3>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                Pipeline: Driver Phone ➔ GPS ➔ Backend (:4000) ➔ Management Dispatch Dashboard ➔ Passenger View
+              </div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span className="badge badge-green" style={{ fontSize: '0.75rem' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--ethiopia-green)', animation: 'pulse 1.5s infinite' }}></span>
+              Live Telemetry Stream
+            </span>
+            <span className="badge badge-gold" style={{ fontSize: '0.75rem' }}>
+              Max 80 km/h FDRE Limit
+            </span>
+          </div>
+        </div>
+
+        {fleetTracking.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+            No active buses currently in transit. Once a driver starts a trip in the <strong>Driver App</strong> and broadcasts GPS pings, live positions will appear here in real time.
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '14px' }}>
+            {fleetTracking.map(item => (
+              <div key={item.tripId} style={{
+                background: 'rgba(15, 23, 42, 0.8)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '10px',
+                padding: '14px'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                  <div>
+                    <span className="badge badge-gold" style={{ fontSize: '0.75rem' }}>{item.tripCode}</span>
+                    <strong style={{ marginLeft: '6px', fontSize: '0.9rem' }}>{item.busPlate}</strong>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '4px' }}>({item.busSide})</span>
+                  </div>
+                  <span className={`badge ${item.speedKmH > 80 ? 'badge-red' : 'badge-green'}`} style={{ fontSize: '0.7rem' }}>
+                    <Gauge size={12} style={{ marginRight: '4px' }} />
+                    {item.speedKmH} km/h
+                  </span>
+                </div>
+
+                <div style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px' }}>
+                  {item.route}
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: 'var(--text-gold)', marginBottom: '8px' }}>
+                  <MapPin size={13} />
+                  <span>{item.milestone}</span>
+                </div>
+
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  padding: '6px 10px',
+                  background: 'rgba(0, 0, 0, 0.3)',
+                  borderRadius: '6px',
+                  fontSize: '0.72rem',
+                  color: 'var(--text-secondary)'
+                }}>
+                  <span>GPS: {item.latitude.toFixed(4)}°N, {item.longitude.toFixed(4)}°E</span>
+                  <span>Driver: <strong>{item.driverName}</strong></span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Main Grid: Left Live Trip Dispatch Board, Right Active Fleet Status */}
@@ -180,7 +395,10 @@ export const OperationsDispatcher: React.FC<OperationsDispatcherProps> = ({ isAm
                         <span className={`badge ${
                           trip.status === 'BOARDING' ? 'badge-green' :
                           trip.status === 'DEPARTED' ? 'badge-blue' :
-                          trip.status === 'IN_TRANSIT' ? 'badge-blue' : 'badge-gold'
+                          trip.status === 'IN_TRANSIT' ? 'badge-blue' :
+                          trip.status === 'ARRIVED' ? 'badge-green' :
+                          trip.status === 'DELAYED' ? 'badge-red' :
+                          trip.status === 'CANCELLED' ? 'badge-red' : 'badge-gold'
                         }`}>
                           {trip.status}
                         </span>
@@ -203,16 +421,17 @@ export const OperationsDispatcher: React.FC<OperationsDispatcherProps> = ({ isAm
                     </div>
                   </div>
 
-                  {/* Vehicle & Crew Bar */}
+                  {/* Vehicle & Crew Bar with Quick Assign button */}
                   <div style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    gridTemplateColumns: 'repeat(3, 1fr) auto',
                     gap: '10px',
                     padding: '10px 14px',
                     background: 'rgba(15, 23, 42, 0.7)',
                     borderRadius: '8px',
                     fontSize: '0.8rem',
-                    marginBottom: '14px'
+                    marginBottom: '14px',
+                    alignItems: 'center'
                   }}>
                     <div>
                       <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>BUS & PLATE</div>
@@ -225,6 +444,16 @@ export const OperationsDispatcher: React.FC<OperationsDispatcherProps> = ({ isAm
                     <div>
                       <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>CONDUCTOR</div>
                       <div style={{ fontWeight: 700 }}>{trip.conductorName}</div>
+                    </div>
+                    <div>
+                      <button
+                        onClick={() => openAssignModal(trip)}
+                        className="btn btn-secondary"
+                        style={{ padding: '4px 8px', fontSize: '0.72rem' }}
+                        title="Reassign Bus and Driver"
+                      >
+                        <User size={12} /> Assign
+                      </button>
                     </div>
                   </div>
 
@@ -254,7 +483,7 @@ export const OperationsDispatcher: React.FC<OperationsDispatcherProps> = ({ isAm
                         className="btn btn-green"
                         style={{ padding: '6px 12px', fontSize: '0.78rem' }}
                       >
-                        <CheckCircle2 size={14} /> Start Passenger Boarding
+                        <CheckCircle2 size={14} /> Start Trip (Boarding)
                       </button>
                     )}
 
@@ -274,30 +503,39 @@ export const OperationsDispatcher: React.FC<OperationsDispatcherProps> = ({ isAm
                         className="btn btn-telebirr"
                         style={{ padding: '6px 12px', fontSize: '0.78rem' }}
                       >
-                        Mark Highway In-Transit
+                        <Navigation size={14} /> Mark Highway In-Transit
                       </button>
                     )}
 
-                    {trip.status === 'IN_TRANSIT' && (
+                    {(trip.status === 'IN_TRANSIT' || trip.status === 'DEPARTED' || trip.status === 'DELAYED') && (
                       <button
                         onClick={() => handleAdvanceStatus(trip.id, 'ARRIVED')}
                         className="btn btn-secondary"
                         style={{ padding: '6px 12px', fontSize: '0.78rem', background: '#059669', color: '#FFF' }}
                       >
-                        Confirm Arrival at Destination
+                        <CheckCircle2 size={14} /> Mark Arrival
                       </button>
                     )}
 
-                    <button
-                      onClick={() => {
-                        const reason = prompt('Enter delay or incident note (e.g. Mojo checkpoint queue / flat tire):');
-                        if (reason) handleAdvanceStatus(trip.id, 'DELAYED');
-                      }}
-                      className="btn btn-secondary"
-                      style={{ padding: '6px 10px', fontSize: '0.75rem', color: '#F87171' }}
-                    >
-                      Report Delay
-                    </button>
+                    {trip.status !== 'CANCELLED' && trip.status !== 'ARRIVED' && (
+                      <button
+                        onClick={() => openDelayModal(trip)}
+                        className="btn btn-secondary"
+                        style={{ padding: '6px 10px', fontSize: '0.75rem', color: '#FBBF24' }}
+                      >
+                        <Clock size={13} /> Mark Delay
+                      </button>
+                    )}
+
+                    {trip.status !== 'CANCELLED' && trip.status !== 'ARRIVED' && (
+                      <button
+                        onClick={() => handleCancelTrip(trip)}
+                        className="btn btn-secondary"
+                        style={{ padding: '6px 10px', fontSize: '0.75rem', color: '#F87171' }}
+                      >
+                        <Ban size={13} /> Cancel Trip
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -348,7 +586,7 @@ export const OperationsDispatcher: React.FC<OperationsDispatcherProps> = ({ isAm
         </div>
       </div>
 
-      {/* Schedule Trip Modal */}
+      {/* Schedule Trip Modal (Create trip, assign bus, assign driver) */}
       {showScheduleModal && (
         <div style={{
           position: 'fixed',
@@ -366,7 +604,7 @@ export const OperationsDispatcher: React.FC<OperationsDispatcherProps> = ({ isAm
         }}>
           <div className="glass-panel" style={{ maxWidth: '540px', width: '100%', padding: '32px', border: '1px solid rgba(245, 158, 11, 0.4)' }}>
             <h3 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '18px' }}>
-              Schedule New Intercity Trip
+              Create & Schedule New Trip
             </h3>
 
             <form onSubmit={handleCreateTrip} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -404,7 +642,7 @@ export const OperationsDispatcher: React.FC<OperationsDispatcherProps> = ({ isAm
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div className="form-group">
-                  <label className="form-label">Driver Name</label>
+                  <label className="form-label">Assign Driver Name</label>
                   <input
                     type="text"
                     className="form-input"
@@ -481,6 +719,165 @@ export const OperationsDispatcher: React.FC<OperationsDispatcherProps> = ({ isAm
                 </button>
                 <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
                   Schedule Trip
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Assign Bus & Driver Modal */}
+      {showAssignModal && selectedTripForAssign && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.8)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 100,
+          padding: '20px'
+        }}>
+          <div className="glass-panel" style={{ maxWidth: '500px', width: '100%', padding: '28px', border: '1px solid rgba(245, 158, 11, 0.4)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>
+                Assign Bus & Crew: {selectedTripForAssign.tripCode}
+              </h3>
+              <button onClick={() => setShowAssignModal(false)} className="btn btn-secondary" style={{ padding: '4px 8px' }}>
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveAssignment} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div className="form-group">
+                <label className="form-label">Assigned Vehicle</label>
+                <select
+                  className="form-select"
+                  value={assignBusId}
+                  onChange={e => setAssignBusId(e.target.value)}
+                  required
+                >
+                  {fleet.map(b => (
+                    <option key={b.id} value={b.id}>
+                      {b.sideNumber} - {b.plateNumber} ({b.busModel} - {b.totalSeats} seats) {b.status === 'MAINTENANCE' ? '[In Shop]' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div className="form-group">
+                  <label className="form-label">Driver Name</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={assignDriverName}
+                    onChange={e => setAssignDriverName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Driver Phone</label>
+                  <input
+                    type="tel"
+                    className="form-input"
+                    value={assignDriverPhone}
+                    onChange={e => setAssignDriverPhone(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div className="form-group">
+                  <label className="form-label">Conductor Name</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={assignConductorName}
+                    onChange={e => setAssignConductorName(e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Conductor Phone</label>
+                  <input
+                    type="tel"
+                    className="form-input"
+                    value={assignConductorPhone}
+                    onChange={e => setAssignConductorPhone(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                <button type="button" onClick={() => setShowAssignModal(false)} className="btn btn-secondary" style={{ flex: 1 }}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
+                  Save Assignment
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Mark Delay Modal */}
+      {showDelayModal && selectedTripForDelay && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.8)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 100,
+          padding: '20px'
+        }}>
+          <div className="glass-panel" style={{ maxWidth: '440px', width: '100%', padding: '28px', border: '1px solid rgba(245, 158, 11, 0.4)' }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '14px' }}>
+              Mark Delay for {selectedTripForDelay.tripCode}
+            </h3>
+
+            <form onSubmit={handleSaveDelay} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div className="form-group">
+                <label className="form-label">Estimated Delay (Minutes)</label>
+                <input
+                  type="number"
+                  className="form-input"
+                  min="5"
+                  max="480"
+                  value={delayMinutes}
+                  onChange={e => setDelayMinutes(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Operational Reason</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={delayReason}
+                  onChange={e => setDelayReason(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                <button type="button" onClick={() => setShowDelayModal(false)} className="btn btn-secondary" style={{ flex: 1 }}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
+                  Broadcast Delay
                 </button>
               </div>
             </form>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Bus, Ticket, Store, ShieldCheck, QrCode, BarChart3, Globe, Radio, Search } from 'lucide-react';
 
-export type AppTab = 'passenger' | 'my-bookings' | 'agent' | 'dispatch' | 'manifest' | 'conductor' | 'analytics';
+export type AppTab = 'passenger' | 'mobile-app' | 'my-bookings' | 'agent' | 'driver' | 'dispatch' | 'manifest' | 'conductor' | 'analytics';
 
 interface NavbarProps {
   currentTab: AppTab;
@@ -55,7 +55,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setTab, isAmharic, s
           </div>
         </div>
 
-        {/* Navigation Tabs (Days 4-6 Clickable Prototype) */}
+        {/* Navigation Tabs */}
         <nav style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(24, 34, 52, 0.7)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border-subtle)', flexWrap: 'wrap' }}>
           <button
             onClick={() => setTab('passenger')}
@@ -63,7 +63,16 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setTab, isAmharic, s
             style={{ padding: '6px 10px', fontSize: '0.8rem' }}
           >
             <Ticket size={14} />
-            <span>{isAmharic ? 'ቦታ ማስያዝ' : 'Book Trip'}</span>
+            <span>{isAmharic ? 'ድረ-ገጽ' : 'Web Booking'}</span>
+          </button>
+
+          <button
+            onClick={() => setTab('mobile-app')}
+            className={`btn ${currentTab === 'mobile-app' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ padding: '6px 10px', fontSize: '0.8rem' }}
+          >
+            <Ticket size={14} />
+            <span>{isAmharic ? 'ሞባይል መተግበሪያ' : 'Mobile App'}</span>
           </button>
 
           <button
@@ -82,6 +91,15 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setTab, isAmharic, s
           >
             <Store size={14} />
             <span>{isAmharic ? 'ካውንተር' : 'Agent POS'}</span>
+          </button>
+
+          <button
+            onClick={() => setTab('driver')}
+            className={`btn ${currentTab === 'driver' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ padding: '6px 10px', fontSize: '0.8rem' }}
+          >
+            <Radio size={14} />
+            <span>{isAmharic ? 'አሽከርካሪ' : 'Driver App'}</span>
           </button>
 
           <button

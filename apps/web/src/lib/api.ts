@@ -252,3 +252,55 @@ export async function closeShift(payload: {
   return res.json();
 }
 
+export async function fetchFleetTracking() {
+  const res = await fetch(`${API_BASE}/tracking/fleet`);
+  if (!res.ok) throw new Error('Failed to fetch fleet tracking');
+  return res.json();
+}
+
+export async function fetchTripTracking(tripId: string) {
+  const res = await fetch(`${API_BASE}/tracking/trip/${tripId}`);
+  if (!res.ok) throw new Error('Failed to fetch trip tracking');
+  return res.json();
+}
+
+export async function sendGpsPing(payload: {
+  tripId: string;
+  latitude: number;
+  longitude: number;
+  speedKmH?: number;
+  milestone?: string;
+  driverPhone?: string;
+}) {
+  const res = await fetch(`${API_BASE}/tracking/ping`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Failed to send GPS ping');
+  }
+  return res.json();
+}
+
+export async function assignTripCrew(tripId: string, payload: {
+  busId?: string;
+  driverName?: string;
+  driverPhone?: string;
+  conductorName?: string;
+  conductorPhone?: string;
+}) {
+  const res = await fetch(`${API_BASE}/trips/${tripId}/assign`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Failed to update assignment');
+  }
+  return res.json();
+}
+
+

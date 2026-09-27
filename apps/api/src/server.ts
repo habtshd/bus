@@ -10,6 +10,8 @@ import ticketsRoutes from './routes/tickets.routes';
 import manifestRoutes from './routes/manifest.routes';
 import analyticsRoutes from './routes/analytics.routes';
 import agentRoutes from './routes/agent.routes';
+import driverRoutes from './routes/driver.routes';
+import trackingRoutes from './routes/tracking.routes';
 
 dotenv.config();
 
@@ -34,6 +36,8 @@ app.use('/api/tickets', ticketsRoutes);
 app.use('/api/manifest', manifestRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/agent', agentRoutes);
+app.use('/api/driver', driverRoutes);
+app.use('/api/tracking', trackingRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

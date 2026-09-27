@@ -174,11 +174,34 @@ model Trip {
   fareETB               Float
   status                String      @default("SCHEDULED") // SCHEDULED | BOARDING | DEPARTED | IN_TRANSIT | ARRIVED | CANCELLED | DELAYED
   delayReason           String?
+  delayMinutes          Int?        @default(0)
+  currentLatitude       Float?
+  currentLongitude      Float?
+  currentSpeedKmH       Float?
+  currentMilestone      String?     // e.g. "Mojo Junction - Km 70", "Batu Lake Ziway", "Shashemene Roundabout"
+  lastGpsPingAt         DateTime?
   bookings              Booking[]
   tickets               Ticket[]
   boardings             Boarding[]
   seatLocks             SeatLock[]
+  incidents             IncidentReport[]
   createdAt             DateTime    @default(now())
+}
+
+model IncidentReport {
+  id                    String      @id @default(uuid())
+  tripId                String
+  trip                  Trip        @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  reportedByDriverId    String?
+  driverName            String
+  incidentType          String      // MECHANICAL_BREAKDOWN | FLAT_TIRE | ROAD_BLOCK | POLICE_CHECKPOINT | PASSENGER_EMERGENCY
+  severity              String      @default("MEDIUM") // LOW | MEDIUM | HIGH | CRITICAL
+  description           String
+  locationName          String?
+  latitude              Float?
+  longitude             Float?
+  reportedAt            DateTime    @default(now())
+  resolved              Boolean     @default(false)
 }
 
 // 12. Passenger (Master Passenger Registry)
