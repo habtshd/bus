@@ -49,3 +49,11 @@ jobs:
       - name: Run Agent & Terminal System Tests
         working-directory: apps/api
         run: npm run test:agent
+
+      - name: Run E2E Booking Pipeline Tests
+        working-directory: apps/api
+        run: npm run test:e2e:booking
+
+      - name: Run Production Booking & Payment Webhook Tests
+        working-directory: apps/api
+        run: npm run test:booking:service
