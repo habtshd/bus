@@ -14,6 +14,9 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.generateSeatLayout = void 0;
 __exportStar(require("./types"), exports);
 __exportStar(require("./seat-engine"), exports);
+var seat_engine_1 = require("./seat-engine");
+Object.defineProperty(exports, "generateSeatLayout", { enumerable: true, get: function () { return seat_engine_1.generateSeatLayout; } });
 //# sourceMappingURL=index.js.map
