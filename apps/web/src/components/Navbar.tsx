@@ -50,7 +50,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setTab, isAmharic, s
           <div>
             <div style={{ fontWeight: 800, fontSize: '1.15rem', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span>ABYSSINIA BUS</span>
-              <span className="badge badge-gold" style={{ fontSize: '0.65rem', padding: '2px 6px' }}>MVP</span>
+              <span className="badge badge-green" style={{ fontSize: '0.65rem', padding: '2px 8px', letterSpacing: '0.06em' }}>
+                PRODUCTION
+              </span>
             </div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
               {isAmharic ? 'አቢሲኒያ የረጅም ርቀት አውቶቡስ' : 'Ethiopian Intercity Bus Platform'}
