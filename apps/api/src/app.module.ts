@@ -8,6 +8,8 @@ import { BranchesModule } from './modules/branches/branches.module';
 import { BusesModule } from './modules/buses/buses.module';
 import { RoutesModule } from './modules/routes/routes.module';
 import { TripsModule } from './modules/trips/trips.module';
+import { PricingModule } from './modules/pricing/pricing.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 import { ReservationsModule } from './modules/reservations/reservations.module';
 import { BookingsModule } from './modules/bookings/bookings.module';
 import { BoardingModule } from './modules/boarding/boarding.module';
@@ -25,6 +27,8 @@ import { AgentModule } from './modules/agent/agent.module';
     BusesModule,
     RoutesModule,
     TripsModule,
+    PricingModule,
+    PaymentsModule,
     ReservationsModule,
     BookingsModule,
     BoardingModule,

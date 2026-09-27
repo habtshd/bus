@@ -231,6 +231,15 @@ class MockAgentPrisma {
       this.reservations.push(r);
       return r;
     },
+    findUnique: async ({ where }: any) => {
+      const r = this.reservations.find((item) => item.id === where.id);
+      if (!r) return null;
+      return {
+        ...r,
+        trip: this.trips.find((t) => t.id === r.tripId),
+        seats: this.tripSegmentSeats.filter((s) => s.reservationId === r.id),
+      };
+    },
     update: async ({ where, data }: any) => {
       const r = this.reservations.find((item) => item.id === where.id);
       if (r) Object.assign(r, data);
@@ -490,7 +499,7 @@ async function runAgentTerminalVerification() {
   console.log(`   ✅ Booking Confirmed! Ref: ${bookingResult.bookingReference}`);
   console.log(`   ✅ Fare: ETB ${bookingResult.totalAmountETB} | Cash: ETB ${bookingResult.cashTenderedETB} | Change Due: ETB ${bookingResult.changeReturnedETB}`);
   console.log(`   ✅ Ticket Issued: ${bookingResult.tickets[0].ticketNumber} | QR Hash: ${bookingResult.tickets[0].qrHash.slice(0, 16)}...`);
-  console.log(`   ✅ Thermal POS Receipt Generated:\n${bookingResult.thermalReceipt.trim()}`);
+  console.log(`   ✅ Thermal POS Receipt Generated:\n${(bookingResult.thermalReceipt || '').trim()}`);
 
   // Verify shift live cash counter
   const shiftStatus = await shiftsService.getCurrentShift({ userId: agent.id });

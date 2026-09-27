@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsEmail,
   IsNumber,
   IsOptional,
   IsString,
@@ -9,17 +10,41 @@ import {
 } from 'class-validator';
 
 export class PassengerItemDto {
+  @IsOptional()
   @IsString()
-  seatId!: string; // busSeatId or seatNumber
+  seatId?: string; // busSeatId or physical seat id
 
+  @IsOptional()
   @IsString()
-  seatNumber!: string;
+  seatNumber?: string; // e.g. "12A"
 
+  @IsOptional()
   @IsString()
-  passengerName!: string;
+  passengerName?: string;
 
+  @IsOptional()
   @IsString()
-  passengerPhone!: string;
+  firstName?: string;
+
+  @IsOptional()
+  @IsString()
+  lastName?: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @IsOptional()
+  @IsString()
+  passengerPhone?: string;
+
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  passportNumber?: string;
 
   @IsOptional()
   @IsString()
@@ -27,27 +52,32 @@ export class PassengerItemDto {
 }
 
 export class CreateBookingDto {
-  @IsString()
-  tripId!: string;
-
   @IsOptional()
   @IsString()
   reservationId?: string;
 
+  @IsOptional()
   @IsString()
-  fromStopId!: string;
-
-  @IsString()
-  toStopId!: string;
-
-  @IsString()
-  customerName!: string;
-
-  @IsString()
-  customerPhone!: string;
+  tripId?: string;
 
   @IsOptional()
   @IsString()
+  fromStopId?: string;
+
+  @IsOptional()
+  @IsString()
+  toStopId?: string;
+
+  @IsOptional()
+  @IsString()
+  customerName?: string;
+
+  @IsOptional()
+  @IsString()
+  customerPhone?: string;
+
+  @IsOptional()
+  @IsEmail()
   customerEmail?: string;
 
   @IsArray()
@@ -55,8 +85,17 @@ export class CreateBookingDto {
   @Type(() => PassengerItemDto)
   passengers!: PassengerItemDto[];
 
+  @IsOptional()
   @IsString()
-  paymentMethod!: string; // CASH | TELEBIRR | CBE_BIRR | AWASH_BIRR | CHAPA_GATEWAY
+  paymentMethod?: string; // CASH | TELEBIRR | CBE_BIRR | AWASH_BIRR | CHAPA | CARD
+
+  @IsOptional()
+  @IsString()
+  channel?: string; // PASSENGER_APP | WEBSITE | COUNTER | PHONE | TRAVEL_AGENT | EXTERNAL_OTA
+
+  @IsOptional()
+  @IsString()
+  promoCode?: string;
 
   @IsOptional()
   @IsString()
@@ -75,3 +114,4 @@ export class CreateBookingDto {
   @IsString()
   agentId?: string;
 }
+

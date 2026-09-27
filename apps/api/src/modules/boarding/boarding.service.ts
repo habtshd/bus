@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import * as crypto from 'crypto';
 import { PrismaService } from '../../common/database/prisma.service';
 import { ScanTicketDto } from './dto/scan-ticket.dto';
 
@@ -12,11 +13,17 @@ export class BoardingService {
 
   async scanTicket(dto: ScanTicketDto, currentUser?: any) {
     const raw = dto.qrPayload.trim();
+    const rawHash = crypto.createHash('sha256').update(raw).digest('hex');
 
-    // Look up by qrHash or ticketNumber
+    // Look up by qrHash, rawHash, qrToken, or ticketNumber
     const ticket = await this.prisma.ticket.findFirst({
       where: {
-        OR: [{ qrHash: raw }, { ticketNumber: raw }],
+        OR: [
+          { qrHash: raw },
+          { qrHash: rawHash },
+          { qrToken: raw },
+          { ticketNumber: raw },
+        ],
       },
       include: {
         trip: {
@@ -53,16 +60,16 @@ export class BoardingService {
     }
 
     // Check if ticket already boarded
-    if (ticket.status === 'BOARDED' || ticket.boardings.length > 0) {
-      const lastBoarding = ticket.boardings[0];
+    if (ticket.status === 'BOARDED' || (ticket.boardings && ticket.boardings.length > 0)) {
+      const lastBoarding = ticket.boardings ? ticket.boardings[0] : null;
       return {
         valid: false,
         status: 'DUPLICATE',
-        message: `Ticket already scanned and boarded at ${lastBoarding.scannedAt.toLocaleTimeString()}`,
+        message: `Ticket already scanned and boarded at ${lastBoarding?.scannedAt ? lastBoarding.scannedAt.toLocaleTimeString() : 'gate'}`,
         ticketNumber: ticket.ticketNumber,
         passengerName: ticket.passengerName,
         seatNumber: ticket.seatNumber,
-        boardedAt: lastBoarding.scannedAt,
+        boardedAt: lastBoarding?.scannedAt || new Date(),
       };
     }
 
