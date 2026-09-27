@@ -325,6 +325,47 @@ async function runTests() {
     throw new Error('Seat was not restored to AVAILABLE upon expiration!');
   }
 
+  // 6. Section 7 & 8 Blueprint Test: Multi-Hop Seat Reuse & Critical Overlap Defense
+  console.log('\n6️⃣ Multi-Hop Seat Reuse & Critical Overlap Defense (Sections 7 & 8)...');
+  console.log('   Passenger A: Holds Seat 12A from Dessie (DES) to Bahir Dar (BD)...');
+  const resA = await reservationsService.reserveSeats(
+    createdTrip!.id,
+    stopDES.id,
+    stopBD.id,
+    ['seat_12A'],
+    'passenger_A',
+  );
+  console.log(`   ✅ Passenger A Hold Granted: ID ${resA.reservationId} (Segment 3 is HELD)`);
+
+  console.log('   Passenger B: Requests SAME Seat 12A from Addis (ADD) to Dessie (DES)...');
+  const resB = await reservationsService.reserveSeats(
+    createdTrip!.id,
+    stopADD.id,
+    stopDES.id,
+    ['seat_12A'],
+    'passenger_B',
+  );
+  console.log(`   ✅ Passenger B Hold Granted: ID ${resB.reservationId} (Segments 1 & 2 are HELD)`);
+  console.log('   🎉 Seat 12A is simultaneously and safely held by 2 different passengers for non-overlapping hops!');
+
+  console.log('   Passenger C: Requests Seat 12A from Debre Sina (DS) to Bahir Dar (BD)...');
+  let passengerCRejected = false;
+  try {
+    await reservationsService.reserveSeats(
+      createdTrip!.id,
+      stopDS.id,
+      stopBD.id,
+      ['seat_12A'],
+      'passenger_C',
+    );
+  } catch (err: any) {
+    passengerCRejected = true;
+    console.log(`   ✅ Critical Overlap Defense Passed! Passenger C REJECTED: "${err.message}"`);
+  }
+  if (!passengerCRejected) {
+    throw new Error('Overlap conflict failed! Passenger C was erroneously allowed to double-book overlapping segment.');
+  }
+
   console.log('\n========================================================================');
   console.log('🎉 ALL ENGINE ACCEPTANCE TESTS COMPLETED WITH 100% SUCCESS!');
   console.log('========================================================================\n');
