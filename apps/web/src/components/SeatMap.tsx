@@ -205,19 +205,23 @@ export const SeatMap: React.FC<SeatMapProps> = ({
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <div style={{ width: '16px', height: '16px', borderRadius: '4px', background: 'var(--seat-available)', border: '1px solid var(--seat-available-border)' }}></div>
-          <span>Available ({layout.availableCount})</span>
+          <span>AVAILABLE ({layout.availableCount})</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <div style={{ width: '16px', height: '16px', borderRadius: '4px', background: 'var(--seat-selected)', border: '1px solid #FCD34D' }}></div>
-          <span>Selected ({selectedSeats.length})</span>
+          <div style={{ width: '16px', height: '16px', borderRadius: '4px', background: '#3A2E12', border: '1px solid #634E17' }}></div>
+          <span>HELD ({layout.heldCount || layout.lockedCount})</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <div style={{ width: '16px', height: '16px', borderRadius: '4px', background: '#3B1818', border: '1px solid #5C1D1D' }}></div>
-          <span>Booked ({layout.bookedCount})</span>
+          <span>PAID ({layout.paidCount || layout.bookedCount})</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <div style={{ width: '16px', height: '16px', borderRadius: '4px', background: '#133E2B', border: '1px solid #1B5E3F' }}></div>
-          <span>Boarded</span>
+          <span>BOARDED ({layout.boardedCount || 0})</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ width: '16px', height: '16px', borderRadius: '4px', background: 'var(--seat-selected)', border: '1px solid #FCD34D' }}></div>
+          <span>SELECTED ({selectedSeats.length})</span>
         </div>
       </div>
     </div>

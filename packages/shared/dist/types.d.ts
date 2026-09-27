@@ -1,8 +1,8 @@
 export type UserRole = 'SUPER_ADMIN' | 'BRANCH_MANAGER' | 'TICKET_AGENT' | 'DISPATCHER' | 'CONDUCTOR' | 'PASSENGER';
-export type BusType = 'LUXURY_2X2' | 'STANDARD_2X3';
+export type BusType = 'LUXURY_2X2' | 'STANDARD_2X3' | 'VIP_FIRST_CLASS_1X2';
 export type BusStatus = 'ACTIVE' | 'MAINTENANCE' | 'STANDBY' | 'OUT_OF_SERVICE';
 export type TripStatus = 'SCHEDULED' | 'BOARDING' | 'DEPARTED' | 'IN_TRANSIT' | 'ARRIVED' | 'CANCELLED' | 'DELAYED';
-export type SeatStatus = 'AVAILABLE' | 'SELECTED' | 'LOCKED' | 'BOOKED' | 'BLOCKED';
+export type SeatStatus = 'AVAILABLE' | 'HELD' | 'PAID' | 'BOARDED' | 'SELECTED' | 'LOCKED' | 'BOOKED' | 'BLOCKED';
 export type PaymentMethod = 'CASH' | 'TELEBIRR' | 'CBE_BIRR' | 'AWASH_BIRR' | 'CHAPA_GATEWAY';
 export type PaymentStatus = 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
 export type TicketStatus = 'ISSUED' | 'BOARDED' | 'NO_SHOW' | 'CANCELLED';

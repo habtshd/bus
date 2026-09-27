@@ -259,6 +259,7 @@ model Ticket {
   fareETB               Float
   qrHash                String              @unique
   status                String              @default("ISSUED") // ISSUED | BOARDED | NO_SHOW | CANCELLED
+  boardedAt             DateTime?
   boardingTerminal      String?
   dropoffTerminal       String?
   boardings             Boarding[]

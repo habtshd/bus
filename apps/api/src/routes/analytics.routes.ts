@@ -26,7 +26,7 @@ router.get('/dashboard', async (req: Request, res: Response) => {
       }),
       prisma.booking.findMany({
         where: { paymentStatus: 'COMPLETED' },
-        include: { branch: true }
+        include: { branch: true, payments: true }
       }),
       prisma.booking.findMany({
         where: { paymentStatus: 'COMPLETED' },
@@ -44,6 +44,7 @@ router.get('/dashboard', async (req: Request, res: Response) => {
             }
           },
           tickets: true,
+          payments: true,
           branch: true
         }
       }),
@@ -59,18 +60,20 @@ router.get('/dashboard', async (req: Request, res: Response) => {
     // Payment methods breakdown
     const paymentBreakdown: Record<string, { count: number; totalETB: number }> = {};
     for (const b of allBookings) {
-      if (!paymentBreakdown[b.paymentMethod]) {
-        paymentBreakdown[b.paymentMethod] = { count: 0, totalETB: 0 };
+      const method = b.payments[0]?.paymentMethod || (b.branchId ? 'CASH' : 'TELEBIRR');
+      if (!paymentBreakdown[method]) {
+        paymentBreakdown[method] = { count: 0, totalETB: 0 };
       }
-      paymentBreakdown[b.paymentMethod].count += 1;
-      paymentBreakdown[b.paymentMethod].totalETB += b.totalAmountETB;
+      paymentBreakdown[method].count += 1;
+      paymentBreakdown[method].totalETB += b.totalAmountETB;
     }
 
     // Branch vs Online breakdown
     let counterSalesETB = 0;
     let onlineSalesETB = 0;
     for (const b of allBookings) {
-      if (b.paymentMethod === 'CASH' || b.branchId) {
+      const method = b.payments[0]?.paymentMethod || 'CASH';
+      if (method === 'CASH' || b.branchId) {
         counterSalesETB += b.totalAmountETB;
       } else {
         onlineSalesETB += b.totalAmountETB;

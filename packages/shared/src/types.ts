@@ -6,7 +6,7 @@ export type UserRole =
   | 'CONDUCTOR'
   | 'PASSENGER';
 
-export type BusType = 'LUXURY_2X2' | 'STANDARD_2X3';
+export type BusType = 'LUXURY_2X2' | 'STANDARD_2X3' | 'VIP_FIRST_CLASS_1X2';
 
 export type BusStatus = 'ACTIVE' | 'MAINTENANCE' | 'STANDBY' | 'OUT_OF_SERVICE';
 
@@ -19,7 +19,15 @@ export type TripStatus =
   | 'CANCELLED'
   | 'DELAYED';
 
-export type SeatStatus = 'AVAILABLE' | 'SELECTED' | 'LOCKED' | 'BOOKED' | 'BLOCKED';
+export type SeatStatus =
+  | 'AVAILABLE'
+  | 'HELD'      // Temporarily locked with 10-min TTL
+  | 'PAID'      // Confirmed ticket purchase
+  | 'BOARDED'   // Conductor checked-in at bus entrance
+  | 'SELECTED'  // Active click in user session
+  | 'LOCKED'    // Synonym for HELD
+  | 'BOOKED'    // Synonym for PAID
+  | 'BLOCKED';  // Mechanical/administrative block
 
 export type PaymentMethod =
   | 'CASH'

@@ -4,9 +4,13 @@ export interface SeatLayoutOptions {
   busType: BusType;
   totalSeats: number;
   baseFareETB: number;
+  paidSeatNumbers?: string[];
+  heldSeatNumbers?: string[];
+  boardedSeatNumbers?: string[];
+  blockedSeatNumbers?: string[];
+  // Backwards compatibility
   bookedSeatNumbers?: string[];
   lockedSeatNumbers?: string[];
-  blockedSeatNumbers?: string[];
 }
 
 export interface GeneratedSeatLayout {
@@ -18,6 +22,10 @@ export interface GeneratedSeatLayout {
   seats: Seat[];
   seatMapByRow: Record<number, Seat[]>;
   availableCount: number;
+  heldCount: number;
+  paidCount: number;
+  boardedCount: number;
+  // Backwards compatibility
   bookedCount: number;
   lockedCount: number;
 }
@@ -27,21 +35,89 @@ export function generateSeatLayout(options: SeatLayoutOptions): GeneratedSeatLay
     busType,
     totalSeats,
     baseFareETB,
-    bookedSeatNumbers = [],
-    lockedSeatNumbers = [],
+    paidSeatNumbers = options.bookedSeatNumbers || [],
+    heldSeatNumbers = options.lockedSeatNumbers || [],
+    boardedSeatNumbers = [],
     blockedSeatNumbers = []
   } = options;
 
-  const bookedSet = new Set(bookedSeatNumbers.map(s => s.trim().toUpperCase()));
-  const lockedSet = new Set(lockedSeatNumbers.map(s => s.trim().toUpperCase()));
+  const paidSet = new Set(paidSeatNumbers.map(s => s.trim().toUpperCase()));
+  const heldSet = new Set(heldSeatNumbers.map(s => s.trim().toUpperCase()));
+  const boardedSet = new Set(boardedSeatNumbers.map(s => s.trim().toUpperCase()));
   const blockedSet = new Set(blockedSeatNumbers.map(s => s.trim().toUpperCase()));
 
   const seats: Seat[] = [];
   const seatMapByRow: Record<number, Seat[]> = {};
 
-  if (busType === 'LUXURY_2X2') {
+  if (busType === 'VIP_FIRST_CLASS_1X2') {
+    // 1x2 VIP Executive Sleeper Layout: Column A (Aisle) B, C
+    // Typically ~30 seats. e.g. 9 rows of 3 = 27 + back row 3 = 30 seats.
+    const seatsPerRow = 3;
+    const totalRows = Math.ceil(totalSeats / seatsPerRow);
+    let seatIndex = 0;
+
+    for (let r = 1; r <= totalRows; r++) {
+      seatMapByRow[r] = [];
+      const letters = ['A', 'B', 'C'];
+
+      for (let c = 0; c < letters.length; c++) {
+        if (seatIndex >= totalSeats) break;
+
+        const letter = letters[c];
+        const seatNumber = `${r}${letter}`;
+        let status: SeatStatus = 'AVAILABLE';
+
+        if (boardedSet.has(seatNumber)) {
+          status = 'BOARDED';
+        } else if (paidSet.has(seatNumber)) {
+          status = 'PAID';
+        } else if (heldSet.has(seatNumber)) {
+          status = 'HELD';
+        } else if (blockedSet.has(seatNumber)) {
+          status = 'BLOCKED';
+        }
+
+        const seat: Seat = {
+          id: `seat-${seatNumber}`,
+          seatNumber,
+          row: r,
+          column: c + 1,
+          columnLetter: letter,
+          isAisle: c === 0 || c === 1,
+          isWindow: c === 0 || c === 2,
+          isBackRow: r === totalRows,
+          status,
+          priceETB: baseFareETB * 1.25 // VIP surcharge
+        };
+
+        seats.push(seat);
+        seatMapByRow[r].push(seat);
+        seatIndex++;
+      }
+    }
+
+    const available = seats.filter(s => s.status === 'AVAILABLE').length;
+    const held = seats.filter(s => s.status === 'HELD' || s.status === 'LOCKED').length;
+    const paid = seats.filter(s => s.status === 'PAID' || s.status === 'BOOKED').length;
+    const boarded = seats.filter(s => s.status === 'BOARDED').length;
+
+    return {
+      busType,
+      totalSeats,
+      rowsCount: totalRows,
+      columnsPerRow: 3,
+      aisleAfterColumn: 1,
+      seats,
+      seatMapByRow,
+      availableCount: available,
+      heldCount: held,
+      paidCount: paid,
+      boardedCount: boarded,
+      bookedCount: paid,
+      lockedCount: held
+    };
+  } else if (busType === 'LUXURY_2X2') {
     // 2x2 layout: Column letters A, B (Aisle) C, D. Back row has 5 seats: A, B, C, D, E.
-    // e.g. 45 seats: 10 standard rows of 4 = 40 seats + 1 back row of 5 = 45 seats.
     const standardSeatsPerRow = 4;
     const standardRows = Math.floor((totalSeats - 5) / standardSeatsPerRow);
     const hasBackRowOf5 = (totalSeats - (standardRows * standardSeatsPerRow)) === 5;
@@ -61,10 +137,12 @@ export function generateSeatLayout(options: SeatLayoutOptions): GeneratedSeatLay
         const seatNumber = `${r}${letter}`;
         let status: SeatStatus = 'AVAILABLE';
 
-        if (bookedSet.has(seatNumber)) {
-          status = 'BOOKED';
-        } else if (lockedSet.has(seatNumber)) {
-          status = 'LOCKED';
+        if (boardedSet.has(seatNumber)) {
+          status = 'BOARDED';
+        } else if (paidSet.has(seatNumber)) {
+          status = 'PAID';
+        } else if (heldSet.has(seatNumber)) {
+          status = 'HELD';
         } else if (blockedSet.has(seatNumber)) {
           status = 'BLOCKED';
         }
@@ -88,6 +166,11 @@ export function generateSeatLayout(options: SeatLayoutOptions): GeneratedSeatLay
       }
     }
 
+    const available = seats.filter(s => s.status === 'AVAILABLE').length;
+    const held = seats.filter(s => s.status === 'HELD' || s.status === 'LOCKED').length;
+    const paid = seats.filter(s => s.status === 'PAID' || s.status === 'BOOKED').length;
+    const boarded = seats.filter(s => s.status === 'BOARDED').length;
+
     return {
       busType,
       totalSeats,
@@ -96,13 +179,15 @@ export function generateSeatLayout(options: SeatLayoutOptions): GeneratedSeatLay
       aisleAfterColumn: 2,
       seats,
       seatMapByRow,
-      availableCount: seats.filter(s => s.status === 'AVAILABLE').length,
-      bookedCount: seats.filter(s => s.status === 'BOOKED').length,
-      lockedCount: seats.filter(s => s.status === 'LOCKED').length
+      availableCount: available,
+      heldCount: held,
+      paidCount: paid,
+      boardedCount: boarded,
+      bookedCount: paid,
+      lockedCount: held
     };
   } else {
     // 2x3 layout: Standard Ethiopian 59-seat intercity bus
-    // Column letters A, B (Aisle) C, D, E. Back row has 5 or 6 seats.
     const standardSeatsPerRow = 5;
     const standardRows = Math.floor((totalSeats - 5) / standardSeatsPerRow);
     const hasBackRowOf5 = (totalSeats - (standardRows * standardSeatsPerRow)) === 5;
@@ -122,10 +207,12 @@ export function generateSeatLayout(options: SeatLayoutOptions): GeneratedSeatLay
         const seatNumber = `${r}${letter}`;
         let status: SeatStatus = 'AVAILABLE';
 
-        if (bookedSet.has(seatNumber)) {
-          status = 'BOOKED';
-        } else if (lockedSet.has(seatNumber)) {
-          status = 'LOCKED';
+        if (boardedSet.has(seatNumber)) {
+          status = 'BOARDED';
+        } else if (paidSet.has(seatNumber)) {
+          status = 'PAID';
+        } else if (heldSet.has(seatNumber)) {
+          status = 'HELD';
         } else if (blockedSet.has(seatNumber)) {
           status = 'BLOCKED';
         }
@@ -149,6 +236,11 @@ export function generateSeatLayout(options: SeatLayoutOptions): GeneratedSeatLay
       }
     }
 
+    const available = seats.filter(s => s.status === 'AVAILABLE').length;
+    const held = seats.filter(s => s.status === 'HELD' || s.status === 'LOCKED').length;
+    const paid = seats.filter(s => s.status === 'PAID' || s.status === 'BOOKED').length;
+    const boarded = seats.filter(s => s.status === 'BOARDED').length;
+
     return {
       busType,
       totalSeats,
@@ -157,9 +249,12 @@ export function generateSeatLayout(options: SeatLayoutOptions): GeneratedSeatLay
       aisleAfterColumn: 2,
       seats,
       seatMapByRow,
-      availableCount: seats.filter(s => s.status === 'AVAILABLE').length,
-      bookedCount: seats.filter(s => s.status === 'BOOKED').length,
-      lockedCount: seats.filter(s => s.status === 'LOCKED').length
+      availableCount: available,
+      heldCount: held,
+      paidCount: paid,
+      boardedCount: boarded,
+      bookedCount: paid,
+      lockedCount: held
     };
   }
 }

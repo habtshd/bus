@@ -3,9 +3,12 @@ export interface SeatLayoutOptions {
     busType: BusType;
     totalSeats: number;
     baseFareETB: number;
+    paidSeatNumbers?: string[];
+    heldSeatNumbers?: string[];
+    boardedSeatNumbers?: string[];
+    blockedSeatNumbers?: string[];
     bookedSeatNumbers?: string[];
     lockedSeatNumbers?: string[];
-    blockedSeatNumbers?: string[];
 }
 export interface GeneratedSeatLayout {
     busType: BusType;
@@ -16,6 +19,9 @@ export interface GeneratedSeatLayout {
     seats: Seat[];
     seatMapByRow: Record<number, Seat[]>;
     availableCount: number;
+    heldCount: number;
+    paidCount: number;
+    boardedCount: number;
     bookedCount: number;
     lockedCount: number;
 }
