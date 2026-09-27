@@ -271,14 +271,13 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
           </p>
         </div>
 
-        {/* Day 16: Interactive Search Widget */}
+        {/* Interactive Search Widget */}
         <div
+          className="hero-search-widget"
           style={{
-            background: 'rgba(15, 23, 42, 0.85)',
             padding: '20px',
             borderRadius: '16px',
             border: '1px solid var(--border-subtle)',
-            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.4)'
           }}
         >
           {/* Trip Type Toggle */}
@@ -564,7 +563,7 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
                         gridTemplateColumns: 'repeat(3, 1fr)',
                         gap: '8px',
                         padding: '10px',
-                        background: 'rgba(15, 23, 42, 0.6)',
+                        background: 'var(--nav-pill-bg)',
                         borderRadius: '8px',
                         fontSize: '0.82rem',
                         marginBottom: '12px'
@@ -709,7 +708,7 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
                         style={{
                           padding: '12px',
                           borderRadius: '10px',
-                          background: paymentMethod === 'TELEBIRR' ? 'rgba(2, 132, 199, 0.25)' : 'rgba(15, 23, 42, 0.6)',
+                          background: paymentMethod === 'TELEBIRR' ? 'rgba(2, 132, 199, 0.25)' : 'var(--nav-pill-bg)',
                           border: paymentMethod === 'TELEBIRR' ? '2px solid #0284C7' : '1px solid var(--border-subtle)',
                           cursor: 'pointer',
                           textAlign: 'center'
@@ -724,7 +723,7 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
                         style={{
                           padding: '12px',
                           borderRadius: '10px',
-                          background: paymentMethod === 'CBE_BIRR' ? 'rgba(147, 51, 234, 0.25)' : 'rgba(15, 23, 42, 0.6)',
+                          background: paymentMethod === 'CBE_BIRR' ? 'rgba(147, 51, 234, 0.25)' : 'var(--nav-pill-bg)',
                           border: paymentMethod === 'CBE_BIRR' ? '2px solid #A855F7' : '1px solid var(--border-subtle)',
                           cursor: 'pointer',
                           textAlign: 'center'
@@ -739,7 +738,7 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
                         style={{
                           padding: '12px',
                           borderRadius: '10px',
-                          background: paymentMethod === 'CHAPA_GATEWAY' ? 'rgba(16, 185, 129, 0.25)' : 'rgba(15, 23, 42, 0.6)',
+                          background: paymentMethod === 'CHAPA_GATEWAY' ? 'rgba(16, 185, 129, 0.25)' : 'var(--nav-pill-bg)',
                           border: paymentMethod === 'CHAPA_GATEWAY' ? '2px solid var(--ethiopia-green)' : '1px solid var(--border-subtle)',
                           cursor: 'pointer',
                           textAlign: 'center'

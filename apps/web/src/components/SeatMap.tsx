@@ -22,30 +22,33 @@ export const SeatMap: React.FC<SeatMapProps> = ({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
       {/* Bus Roof / Exterior Frame */}
-      <div style={{
-        width: is2x2 ? '340px' : '400px',
-        background: 'linear-gradient(180deg, #1A263D 0%, #111A29 100%)',
-        border: '2px solid rgba(245, 158, 11, 0.3)',
-        borderRadius: '36px 36px 18px 18px',
-        padding: '24px 20px 24px 20px',
-        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(245, 158, 11, 0.1)',
-        position: 'relative'
-      }}>
+      <div
+        className="bus-chassis-frame"
+        style={{
+          width: is2x2 ? '340px' : '400px',
+          borderRadius: '36px 36px 18px 18px',
+          padding: '24px 20px 24px 20px',
+          position: 'relative'
+        }}
+      >
         {/* Front Windshield Curved Banner */}
-        <div style={{
-          height: '42px',
-          background: 'linear-gradient(180deg, rgba(56, 189, 248, 0.25) 0%, rgba(14, 165, 233, 0.05) 100%)',
-          borderRadius: '26px 26px 8px 8px',
-          border: '1px solid rgba(56, 189, 248, 0.3)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: '20px',
-          color: '#38BDF8',
-          fontSize: '0.75rem',
-          fontWeight: 700,
-          letterSpacing: '0.1em'
-        }}>
+        <div
+          className="bus-windshield"
+          style={{
+            height: '42px',
+            background: 'linear-gradient(180deg, rgba(56, 189, 248, 0.25) 0%, rgba(14, 165, 233, 0.05) 100%)',
+            borderRadius: '26px 26px 8px 8px',
+            border: '1px solid rgba(56, 189, 248, 0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '20px',
+            color: '#38BDF8',
+            fontSize: '0.75rem',
+            fontWeight: 700,
+            letterSpacing: '0.1em'
+          }}
+        >
           FRONT WINDSHIELD / የፊት መስታወት
         </div>
 
@@ -60,16 +63,19 @@ export const SeatMap: React.FC<SeatMapProps> = ({
         }}>
           {/* Driver Cockpit */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)' }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '8px',
-              background: '#1F2937',
-              border: '1px solid #374151',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
+            <div
+              className="driver-cockpit-box"
+              style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '8px',
+                background: '#1F2937',
+                border: '1px solid #374151',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
               <Compass size={22} color="var(--ethiopia-gold)" />
             </div>
             <div style={{ fontSize: '0.75rem' }}>
