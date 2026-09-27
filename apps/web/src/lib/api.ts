@@ -353,5 +353,24 @@ export async function changePassengerSeat(payload: {
   return res.json();
 }
 
+export async function fetchPilotComparison() {
+  const res = await fetch(`${API_BASE}/analytics/pilot-comparison`);
+  if (!res.ok) throw new Error('Failed to fetch pilot comparison');
+  return res.json();
+}
+
+export async function fetchTripInspection(tripId: string) {
+  const res = await fetch(`${API_BASE}/trips/${tripId}/inspection`);
+  if (!res.ok) throw new Error('Failed to inspect trip chain');
+  return res.json();
+}
+
+export async function seedPilotTrip() {
+  const res = await fetch(`${API_BASE}/trips/pilot-seed`, { method: 'POST' });
+  if (!res.ok) throw new Error('Failed to seed pilot trip');
+  return res.json();
+}
+
+
 
 

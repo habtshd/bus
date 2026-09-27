@@ -1,7 +1,7 @@
 import React from 'react';
-import { Bus, Ticket, Store, ShieldCheck, QrCode, BarChart3, Globe, Radio, Search } from 'lucide-react';
+import { Bus, Ticket, Store, ShieldCheck, QrCode, BarChart3, Globe, Radio, Search, Rocket } from 'lucide-react';
 
-export type AppTab = 'passenger' | 'mobile-app' | 'my-bookings' | 'agent' | 'driver' | 'dispatch' | 'manifest' | 'conductor' | 'analytics';
+export type AppTab = 'passenger' | 'mobile-app' | 'my-bookings' | 'agent' | 'driver' | 'dispatch' | 'manifest' | 'conductor' | 'analytics' | 'pilot-launch';
 
 interface NavbarProps {
   currentTab: AppTab;
@@ -136,6 +136,15 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setTab, isAmharic, s
           >
             <BarChart3 size={14} />
             <span>{isAmharic ? 'ማኔጅመንት' : 'Management'}</span>
+          </button>
+
+          <button
+            onClick={() => setTab('pilot-launch')}
+            className={`btn ${currentTab === 'pilot-launch' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ padding: '6px 10px', fontSize: '0.8rem', borderColor: 'var(--ethiopia-gold)' }}
+          >
+            <Rocket size={14} color="var(--ethiopia-gold)" />
+            <span style={{ fontWeight: 800 }}>{isAmharic ? 'ምረቃ' : 'Launch & Pilot'}</span>
           </button>
         </nav>
 

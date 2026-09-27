@@ -9,6 +9,7 @@ import { ConductorBoardingScanner } from './components/ConductorBoardingScanner'
 import { ManagementDashboard } from './components/ManagementDashboard';
 import { PassengerMobileSimulator } from './components/PassengerMobileSimulator';
 import { DriverPortal } from './components/DriverPortal';
+import { PilotLaunchCenter } from './components/PilotLaunchCenter';
 
 export function App() {
   const [currentTab, setTab] = useState<AppTab>('passenger');
@@ -33,6 +34,7 @@ export function App() {
         {currentTab === 'manifest' && <CheckpointManifestView isAmharic={isAmharic} />}
         {currentTab === 'conductor' && <ConductorBoardingScanner isAmharic={isAmharic} />}
         {currentTab === 'analytics' && <ManagementDashboard isAmharic={isAmharic} />}
+        {currentTab === 'pilot-launch' && <PilotLaunchCenter isAmharic={isAmharic} />}
       </main>
 
       <footer style={{
