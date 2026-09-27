@@ -17,7 +17,8 @@
     "test:agent": "tsx src/modules/agent/agent-terminal-system.spec.ts",
     "test:e2e:booking": "tsx src/test/first-production-e2e-booking.spec.ts",
     "test:booking:service": "tsx src/modules/bookings/booking-service-production.spec.ts",
-    "test:phase1": "tsx src/test/phase1-foundation-lifecycle.spec.ts"
+    "test:phase1": "tsx src/test/phase1-foundation-lifecycle.spec.ts",
+    "demo:target": "tsx src/scripts/execute-first-target.ts"
   },
   "dependencies": {
     "@bus/shared": "file:../../packages/shared",

@@ -1,7 +1,7 @@
 import React from 'react';
-import { Bus, Ticket, Store, ShieldCheck, QrCode, BarChart3, Globe, Radio, Search, Rocket, Sun, Moon } from 'lucide-react';
+import { Bus, Ticket, Store, ShieldCheck, QrCode, BarChart3, Globe, Radio, Search, Rocket, Sun, Moon, Sparkles } from 'lucide-react';
 
-export type AppTab = 'passenger' | 'mobile-app' | 'my-bookings' | 'agent' | 'driver' | 'dispatch' | 'manifest' | 'conductor' | 'analytics' | 'pilot-launch';
+export type AppTab = 'target-demo' | 'passenger' | 'mobile-app' | 'my-bookings' | 'agent' | 'driver' | 'dispatch' | 'manifest' | 'conductor' | 'analytics' | 'pilot-launch';
 
 interface NavbarProps {
   currentTab: AppTab;
@@ -34,7 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setTab, isAmharic, s
         gap: '14px'
       }}>
         {/* Brand Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => setTab('passenger')}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => setTab('target-demo')}>
           <div style={{
             width: '40px',
             height: '40px',
@@ -62,6 +62,21 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setTab, isAmharic, s
 
         {/* Navigation Tabs */}
         <nav style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--nav-pill-bg)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border-subtle)', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => setTab('target-demo')}
+            className={`btn ${currentTab === 'target-demo' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{
+              padding: '6px 11px',
+              fontSize: '0.8rem',
+              borderColor: 'var(--ethiopia-gold)',
+              background: currentTab === 'target-demo' ? 'var(--ethiopia-gold)' : 'rgba(217, 119, 6, 0.12)',
+              color: currentTab === 'target-demo' ? '#000' : 'var(--ethiopia-gold)',
+              fontWeight: 800
+            }}
+          >
+            <Sparkles size={14} color={currentTab === 'target-demo' ? '#000' : 'var(--ethiopia-gold)'} />
+            <span>{isAmharic ? 'የዒላማ ፍሰት' : 'Target Flow (5-Actor)'}</span>
+          </button>
           <button
             onClick={() => setTab('passenger')}
             className={`btn ${currentTab === 'passenger' ? 'btn-primary' : 'btn-secondary'}`}

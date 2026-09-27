@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar, AppTab } from './components/Navbar';
+import { FirstTargetWalkthrough } from './components/FirstTargetWalkthrough';
 import { PassengerPortal } from './components/PassengerPortal';
 import { MyBookingsView } from './components/MyBookingsView';
 import { AgentCounterPOS } from './components/AgentCounterPOS';
@@ -12,7 +13,7 @@ import { DriverPortal } from './components/DriverPortal';
 import { PilotLaunchCenter } from './components/PilotLaunchCenter';
 
 export function App() {
-  const [currentTab, setTab] = useState<AppTab>('passenger');
+  const [currentTab, setTab] = useState<AppTab>('target-demo');
   const [isAmharic, setIsAmharic] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     const saved = localStorage.getItem('bus_theme');
@@ -40,6 +41,7 @@ export function App() {
       />
 
       <main style={{ flex: 1 }}>
+        {currentTab === 'target-demo' && <FirstTargetWalkthrough isAmharic={isAmharic} />}
         {currentTab === 'passenger' && <PassengerPortal isAmharic={isAmharic} />}
         {currentTab === 'mobile-app' && <PassengerMobileSimulator isAmharic={isAmharic} />}
         {currentTab === 'my-bookings' && <MyBookingsView isAmharic={isAmharic} />}
