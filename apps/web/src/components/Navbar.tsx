@@ -1,7 +1,7 @@
 import React from 'react';
-import { Bus, Ticket, Store, ShieldCheck, QrCode, BarChart3, Globe, Radio } from 'lucide-react';
+import { Bus, Ticket, Store, ShieldCheck, QrCode, BarChart3, Globe, Radio, Search } from 'lucide-react';
 
-export type AppTab = 'passenger' | 'agent' | 'dispatch' | 'manifest' | 'conductor' | 'analytics';
+export type AppTab = 'passenger' | 'my-bookings' | 'agent' | 'dispatch' | 'manifest' | 'conductor' | 'analytics';
 
 interface NavbarProps {
   currentTab: AppTab;
@@ -14,7 +14,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setTab, isAmharic, s
   return (
     <header style={{
       borderBottom: '1px solid var(--border-subtle)',
-      background: 'rgba(11, 15, 25, 0.9)',
+      background: 'rgba(11, 15, 25, 0.95)',
       backdropFilter: 'blur(16px)',
       position: 'sticky',
       top: 0,
@@ -28,13 +28,13 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setTab, isAmharic, s
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        gap: '16px'
+        gap: '14px'
       }}>
         {/* Brand Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => setTab('passenger')}>
           <div style={{
-            width: '42px',
-            height: '42px',
+            width: '40px',
+            height: '40px',
             borderRadius: '10px',
             background: 'linear-gradient(135deg, var(--ethiopia-gold), #B45309)',
             display: 'flex',
@@ -42,72 +42,81 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setTab, isAmharic, s
             justifyContent: 'center',
             boxShadow: '0 0 16px var(--ethiopia-gold-glow)'
           }}>
-            <Bus size={24} color="#0B0F19" />
+            <Bus size={22} color="#0B0F19" />
           </div>
           <div>
-            <div style={{ fontWeight: 800, fontSize: '1.2rem', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ fontWeight: 800, fontSize: '1.15rem', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span>ABYSSINIA BUS</span>
               <span className="badge badge-gold" style={{ fontSize: '0.65rem', padding: '2px 6px' }}>MVP</span>
             </div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-              {isAmharic ? 'አቢሲኒያ የረጅም ርቀት አውቶቡስ ትራንስፖርት' : 'Ethiopian Intercity Bus Platform'}
+              {isAmharic ? 'አቢሲኒያ የረጅም ርቀት አውቶቡስ' : 'Ethiopian Intercity Bus Platform'}
             </div>
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(24, 34, 52, 0.6)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border-subtle)', flexWrap: 'wrap' }}>
+        {/* Navigation Tabs (Days 4-6 Clickable Prototype) */}
+        <nav style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(24, 34, 52, 0.7)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border-subtle)', flexWrap: 'wrap' }}>
           <button
             onClick={() => setTab('passenger')}
             className={`btn ${currentTab === 'passenger' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '8px 12px', fontSize: '0.82rem' }}
+            style={{ padding: '6px 10px', fontSize: '0.8rem' }}
           >
-            <Ticket size={15} />
-            <span>{isAmharic ? 'ቦታ ማስያዝ' : 'Passenger'}</span>
+            <Ticket size={14} />
+            <span>{isAmharic ? 'ቦታ ማስያዝ' : 'Book Trip'}</span>
+          </button>
+
+          <button
+            onClick={() => setTab('my-bookings')}
+            className={`btn ${currentTab === 'my-bookings' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ padding: '6px 10px', fontSize: '0.8rem' }}
+          >
+            <Search size={14} />
+            <span>{isAmharic ? 'ትኬቴ' : 'My Bookings'}</span>
           </button>
 
           <button
             onClick={() => setTab('agent')}
             className={`btn ${currentTab === 'agent' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '8px 12px', fontSize: '0.82rem' }}
+            style={{ padding: '6px 10px', fontSize: '0.8rem' }}
           >
-            <Store size={15} />
-            <span>{isAmharic ? 'ካውንተር POS' : 'Agent POS'}</span>
+            <Store size={14} />
+            <span>{isAmharic ? 'ካውንተር' : 'Agent POS'}</span>
           </button>
 
           <button
             onClick={() => setTab('dispatch')}
             className={`btn ${currentTab === 'dispatch' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '8px 12px', fontSize: '0.82rem' }}
+            style={{ padding: '6px 10px', fontSize: '0.8rem' }}
           >
-            <Radio size={15} />
+            <Radio size={14} />
             <span>{isAmharic ? 'ስምሪት' : 'Dispatch'}</span>
           </button>
 
           <button
             onClick={() => setTab('manifest')}
             className={`btn ${currentTab === 'manifest' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '8px 12px', fontSize: '0.82rem' }}
+            style={{ padding: '6px 10px', fontSize: '0.8rem' }}
           >
-            <ShieldCheck size={15} />
+            <ShieldCheck size={14} />
             <span>{isAmharic ? 'ማኒፌስት' : 'Manifest'}</span>
           </button>
 
           <button
             onClick={() => setTab('conductor')}
             className={`btn ${currentTab === 'conductor' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '8px 12px', fontSize: '0.82rem' }}
+            style={{ padding: '6px 10px', fontSize: '0.8rem' }}
           >
-            <QrCode size={15} />
+            <QrCode size={14} />
             <span>{isAmharic ? 'ስካነር' : 'Scanner'}</span>
           </button>
 
           <button
             onClick={() => setTab('analytics')}
             className={`btn ${currentTab === 'analytics' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '8px 12px', fontSize: '0.82rem' }}
+            style={{ padding: '6px 10px', fontSize: '0.8rem' }}
           >
-            <BarChart3 size={15} />
+            <BarChart3 size={14} />
             <span>{isAmharic ? 'ማኔጅመንት' : 'Management'}</span>
           </button>
         </nav>

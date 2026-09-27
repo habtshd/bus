@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Navbar, AppTab } from './components/Navbar';
 import { PassengerPortal } from './components/PassengerPortal';
+import { MyBookingsView } from './components/MyBookingsView';
 import { AgentCounterPOS } from './components/AgentCounterPOS';
 import { OperationsDispatcher } from './components/OperationsDispatcher';
 import { CheckpointManifestView } from './components/CheckpointManifestView';
@@ -22,6 +23,7 @@ export function App() {
 
       <main style={{ flex: 1 }}>
         {currentTab === 'passenger' && <PassengerPortal isAmharic={isAmharic} />}
+        {currentTab === 'my-bookings' && <MyBookingsView isAmharic={isAmharic} />}
         {currentTab === 'agent' && <AgentCounterPOS isAmharic={isAmharic} />}
         {currentTab === 'dispatch' && <OperationsDispatcher isAmharic={isAmharic} />}
         {currentTab === 'manifest' && <CheckpointManifestView isAmharic={isAmharic} />}

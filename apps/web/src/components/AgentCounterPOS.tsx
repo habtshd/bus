@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchTrips, fetchTripDetails, counterCheckout } from '../lib/api';
 import { SeatMap } from './SeatMap';
-import { Store, Banknote, Printer, CheckCircle2, RefreshCw, Calculator, Receipt, User } from 'lucide-react';
+import { Store, Banknote, Printer, RefreshCw, User, Search, FileText, CheckCircle2, X } from 'lucide-react';
 
 interface AgentCounterPOSProps {
   isAmharic: boolean;
@@ -22,6 +22,12 @@ export const AgentCounterPOS: React.FC<AgentCounterPOSProps> = ({ isAmharic }) =
   // Shift & Drawer stats
   const [openingFloat] = useState(2000);
   const [accumulatedCash, setAccumulatedCash] = useState(1300);
+  const [showShiftModal, setShowShiftModal] = useState(false);
+
+  // Passenger Lookup state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchedTicket, setSearchedTicket] = useState<any>(null);
+  const [searching, setSearching] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -102,6 +108,25 @@ export const AgentCounterPOS: React.FC<AgentCounterPOSProps> = ({ isAmharic }) =
     }
   }
 
+  async function handleSearchPassenger() {
+    if (!searchQuery.trim()) return;
+    try {
+      setSearching(true);
+      // Fetch booking by reference
+      const res = await fetch(`http://localhost:4000/api/bookings/${searchQuery.trim()}`);
+      if (!res.ok) {
+        alert('No booking found with this reference code or ticket number.');
+        return;
+      }
+      const data = await res.json();
+      setSearchedTicket(data);
+    } catch (e) {
+      alert('Error searching passenger record');
+    } finally {
+      setSearching(false);
+    }
+  }
+
   return (
     <div style={{ padding: '24px', maxWidth: '1440px', margin: '0 auto' }}>
       {/* Top POS Counter & Shift Header */}
@@ -109,7 +134,7 @@ export const AgentCounterPOS: React.FC<AgentCounterPOSProps> = ({ isAmharic }) =
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
         gap: '16px',
-        marginBottom: '24px'
+        marginBottom: '20px'
       }}>
         <div className="glass-panel" style={{ padding: '18px', display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -122,17 +147,22 @@ export const AgentCounterPOS: React.FC<AgentCounterPOSProps> = ({ isAmharic }) =
           </div>
         </div>
 
-        <div className="glass-panel" style={{ padding: '18px', display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Banknote size={24} color="var(--ethiopia-green)" />
-          </div>
-          <div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>DRAWER CASH BALANCE</div>
-            <div style={{ fontWeight: 800, fontSize: '1.3rem', color: 'var(--ethiopia-green)' }}>
-              {(openingFloat + accumulatedCash).toLocaleString()} ETB
+        <div className="glass-panel" style={{ padding: '18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Banknote size={24} color="var(--ethiopia-green)" />
             </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Opening Float: {openingFloat} ETB</div>
+            <div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>DRAWER CASH BALANCE</div>
+              <div style={{ fontWeight: 800, fontSize: '1.3rem', color: 'var(--ethiopia-green)' }}>
+                {(openingFloat + accumulatedCash).toLocaleString()} ETB
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Float: {openingFloat} ETB</div>
+            </div>
           </div>
+          <button onClick={() => setShowShiftModal(true)} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
+            Shift Closeout
+          </button>
         </div>
 
         <div className="glass-panel" style={{ padding: '18px', display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -140,18 +170,66 @@ export const AgentCounterPOS: React.FC<AgentCounterPOSProps> = ({ isAmharic }) =
             <User size={24} color="#38BDF8" />
           </div>
           <div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>LOGGED IN AGENT</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>COUNTER AGENT</div>
             <div style={{ fontWeight: 800, fontSize: '1.05rem' }}>Tigist Bekele (ID: AG-402)</div>
             <div className="badge badge-green" style={{ fontSize: '0.65rem', marginTop: '2px' }}>SHIFT OPEN</div>
           </div>
         </div>
       </div>
 
+      {/* Staff Fast Passenger Search Toolbar */}
+      <div className="glass-panel" style={{ padding: '14px 20px', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Search size={18} color="var(--ethiopia-gold)" />
+          <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Quick Passenger Lookup:</span>
+        </div>
+        <div style={{ display: 'flex', gap: '8px', flex: 1, maxWidth: '500px' }}>
+          <input
+            type="text"
+            className="form-input"
+            placeholder="Search booking ref e.g. BK-202610-001 or phone"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleSearchPassenger()}
+            style={{ padding: '6px 12px', fontSize: '0.85rem' }}
+          />
+          <button onClick={handleSearchPassenger} disabled={searching} className="btn btn-secondary" style={{ padding: '6px 14px', fontSize: '0.82rem' }}>
+            Find
+          </button>
+        </div>
+      </div>
+
+      {/* Searched Passenger Card (if open) */}
+      {searchedTicket && (
+        <div className="glass-panel" style={{ padding: '18px', marginBottom: '20px', border: '1px solid #38BDF8', position: 'relative' }}>
+          <button onClick={() => setSearchedTicket(null)} style={{ position: 'absolute', top: '12px', right: '12px', background: 'none', border: 'none', color: '#FFF', cursor: 'pointer' }}>
+            <X size={18} />
+          </button>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: 'rgba(56, 189, 248, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <FileText size={22} color="#38BDF8" />
+            </div>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: '1rem' }}>
+                Booking {searchedTicket.bookingReference} — {searchedTicket.customerName} ({searchedTicket.customerPhone})
+              </div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                Route: {searchedTicket.trip.route.originStation.nameEn} ➔ {searchedTicket.trip.route.destinationStation.nameEn} • Status: {searchedTicket.paymentStatus} • Total: {searchedTicket.totalAmountETB} ETB
+              </div>
+            </div>
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px' }}>
+              {searchedTicket.tickets.map((t: any) => (
+                <span key={t.id} className="badge badge-gold">Seat {t.seatNumber} ({t.status})</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Grid: Left Trip Picker & Seat Map, Right Fast Checkout Drawer */}
       <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '24px' }}>
         {/* Left Side: Trip Selector & Seat Matrix */}
         <div>
-          {/* Active Trip Chips */}
           <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '12px', marginBottom: '16px' }}>
             {trips.map(trip => {
               const isSelected = selectedTrip?.id === trip.id;
@@ -380,6 +458,61 @@ export const AgentCounterPOS: React.FC<AgentCounterPOSProps> = ({ isAmharic }) =
           </div>
         </div>
       </div>
+
+      {/* Shift Closeout Modal */}
+      {showShiftModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.8)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 100,
+          padding: '20px'
+        }}>
+          <div className="glass-panel" style={{ maxWidth: '480px', width: '100%', padding: '30px', border: '1px solid rgba(16, 185, 129, 0.4)' }}>
+            <h3 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '16px' }}>
+              Daily Cash Shift Drawer Closeout
+            </h3>
+
+            <div style={{ background: '#0F172A', padding: '16px', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.9rem', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Opening Cash Float:</span>
+                <strong>{openingFloat.toLocaleString()} ETB</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Today's Counter Cash Sales:</span>
+                <strong style={{ color: 'var(--ethiopia-green)' }}>+{accumulatedCash.toLocaleString()} ETB</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Refunds / Voids:</span>
+                <span>0.00 ETB</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-subtle)', paddingTop: '10px', fontSize: '1.05rem', fontWeight: 800 }}>
+                <span>Expected Drawer Total:</span>
+                <span style={{ color: 'var(--text-gold)' }}>{(openingFloat + accumulatedCash).toLocaleString()} ETB</span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={() => setShowShiftModal(false)} className="btn btn-secondary" style={{ flex: 1 }}>
+                Cancel
+              </button>
+              <button onClick={() => {
+                alert('Shift successfully closed! Daily reconciliation record sent to Accountant.');
+                setShowShiftModal(false);
+              }} className="btn btn-green" style={{ flex: 1 }}>
+                Reconcile & Close Shift
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
