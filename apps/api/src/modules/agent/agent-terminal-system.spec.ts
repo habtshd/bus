@@ -469,6 +469,14 @@ async function runAgentTerminalVerification() {
   );
   console.log(`   ✅ Seat 12A HELD! Reservation: ${reservation.reservationId} (Expires in 5 min)`);
 
+  // Verify GET /agent/trips/:id/seats reflects HELD state
+  const seatMapHeld = await agentService.getTripSeats(trip.id, stopADD.id, stopDES.id);
+  const seat12AHeld = seatMapHeld.seats.find((s: any) => s.seatNumber === '12A');
+  console.log(`   ✅ Seat Map Query GET /agent/trips/${trip.id}/seats: Seat 12A status is [${seat12AHeld?.status}]`);
+  if (seat12AHeld?.status !== 'HELD') {
+    throw new Error(`Expected seat 12A to be HELD, got ${seat12AHeld?.status}`);
+  }
+
   // STEP 5: Agent Completes Cash Booking
   console.log('\n5️⃣ Customer tenders ETB 1000 cash for ETB 850 fare. Agent confirms booking...');
   const bookingResult = await bookingsService.createBooking(
@@ -500,6 +508,14 @@ async function runAgentTerminalVerification() {
   console.log(`   ✅ Fare: ETB ${bookingResult.totalAmountETB} | Cash: ETB ${bookingResult.cashTenderedETB} | Change Due: ETB ${bookingResult.changeReturnedETB}`);
   console.log(`   ✅ Ticket Issued: ${bookingResult.tickets[0].ticketNumber} | QR Hash: ${bookingResult.tickets[0].qrHash.slice(0, 16)}...`);
   console.log(`   ✅ Thermal POS Receipt Generated:\n${(bookingResult.thermalReceipt || '').trim()}`);
+
+  // Verify GET /agent/trips/:id/seats reflects CONFIRMED state after sale
+  const seatMapBooked = await agentService.getTripSeats(trip.id, stopADD.id, stopDES.id);
+  const seat12ABooked = seatMapBooked.seats.find((s: any) => s.seatNumber === '12A');
+  console.log(`   ✅ Seat Map Query GET /agent/trips/${trip.id}/seats: Seat 12A status is now [${seat12ABooked?.status}]`);
+  if (seat12ABooked?.status !== 'CONFIRMED') {
+    throw new Error(`Expected seat 12A to be CONFIRMED, got ${seat12ABooked?.status}`);
+  }
 
   // Verify shift live cash counter
   const shiftStatus = await shiftsService.getCurrentShift({ userId: agent.id });

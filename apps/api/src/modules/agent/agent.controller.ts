@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Param,
   Query,
   Req,
 } from '@nestjs/common';
@@ -15,6 +16,15 @@ export class AgentController {
     const companyId = req.user?.companyId || req.headers?.['x-company-id'];
     const branchId = req.user?.branchId || req.headers?.['x-branch-id'];
     return this.agentService.getTodayTrips(companyId, branchId);
+  }
+
+  @Get('trips/:id/seats')
+  getTripSeats(
+    @Param('id') tripId: string,
+    @Query('fromStopId') fromStopId?: string,
+    @Query('toStopId') toStopId?: string,
+  ) {
+    return this.agentService.getTripSeats(tripId, fromStopId, toStopId);
   }
 
   @Get('sales')

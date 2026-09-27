@@ -207,15 +207,31 @@ export class BookingsService {
     const fees = pricing.fees;
     const totalAmount = pricing.total;
 
+    const agentId = dto.agentId || currentUser?.userId;
+    const branchId = dto.branchId || currentUser?.branchId;
+    const isAgent = Boolean(
+      agentId ||
+      branchId ||
+      currentUser?.role === 'TICKET_AGENT' ||
+      currentUser?.role === 'BRANCH_MANAGER',
+    );
+
     const channel =
-      dto.channel || (dto.reservationId ? 'PASSENGER_APP' : 'COUNTER');
+      dto.channel ||
+      (isAgent
+        ? 'COUNTER'
+        : dto.reservationId
+        ? 'PASSENGER_APP'
+        : 'COUNTER');
+
     const paymentMethod = (
       dto.paymentMethod || (channel === 'COUNTER' ? 'CASH' : 'TELEBIRR')
     )
       .toUpperCase()
       .trim();
+
     const isInstantCounterCash =
-      channel === 'COUNTER' && paymentMethod === 'CASH';
+      (channel === 'COUNTER' || isAgent) && paymentMethod === 'CASH';
     const isInstantPayment =
       isInstantCounterCash ||
       !this.paymentsService ||
@@ -225,8 +241,6 @@ export class BookingsService {
 
     const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     const bookingReference = `BK-${dateStr}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
-    const agentId = dto.agentId || currentUser?.userId;
-    const branchId = dto.branchId || currentUser?.branchId;
 
     // 3. Database Transaction: Atomic Seat State Transition & Booking Record Creation
     const txResult = await this.prisma.$transaction(async (tx) => {

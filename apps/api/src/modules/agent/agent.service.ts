@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../common/database/prisma.service';
 
 @Injectable()
@@ -189,5 +189,128 @@ export class AgentService {
       },
       take: 15,
     });
+  }
+
+  async getTripSeats(tripId: string, fromStopId?: string, toStopId?: string) {
+    const trip = await this.prisma.trip.findUnique({
+      where: { id: tripId },
+      include: {
+        route: {
+          include: { originStop: true, destinationStop: true },
+        },
+        bus: {
+          include: { seats: true },
+        },
+        tripSegments: {
+          orderBy: { sequenceNumber: 'asc' },
+          include: {
+            fromStop: true,
+            toStop: true,
+            seats: true,
+          },
+        },
+      },
+    });
+
+    if (!trip) {
+      throw new NotFoundException(`Trip "${tripId}" not found`);
+    }
+
+    const segments = trip.tripSegments;
+    let traversedSegments = segments;
+
+    if (fromStopId && toStopId) {
+      const targetFrom = fromStopId.toUpperCase().trim();
+      const targetTo = toStopId.toUpperCase().trim();
+
+      const fromIndex = segments.findIndex(
+        (s) =>
+          s.fromStopId === fromStopId ||
+          s.fromStop?.code?.toUpperCase() === targetFrom ||
+          s.fromStopId === `stop_${targetFrom}`,
+      );
+      const toIndex = segments.findIndex(
+        (s) =>
+          s.toStopId === toStopId ||
+          s.toStop?.code?.toUpperCase() === targetTo ||
+          s.toStopId === `stop_${targetTo}`,
+      );
+
+      if (fromIndex !== -1 && toIndex !== -1 && fromIndex <= toIndex) {
+        traversedSegments = segments.slice(fromIndex, toIndex + 1);
+      }
+    }
+
+    const now = new Date();
+    const seats = trip.bus.seats.map((seat) => {
+      let status: 'AVAILABLE' | 'HELD' | 'CONFIRMED' | 'BLOCKED' = 'AVAILABLE';
+      let heldExpiresAt: Date | null = null;
+      let reservationId: string | null = null;
+
+      for (const seg of traversedSegments) {
+        const segSeat = seg.seats.find((s: any) => s.busSeatId === seat.id);
+        if (!segSeat) continue;
+
+        if (segSeat.status === 'BLOCKED') {
+          status = 'BLOCKED';
+          break;
+        } else if (
+          segSeat.status === 'BOOKED' ||
+          segSeat.status === 'CONFIRMED'
+        ) {
+          status = 'CONFIRMED';
+          break;
+        } else if (segSeat.status === 'HELD') {
+          if (segSeat.heldUntil && new Date(segSeat.heldUntil) > now) {
+            status = 'HELD';
+            heldExpiresAt = segSeat.heldUntil;
+            reservationId = segSeat.reservationId;
+          }
+        }
+      }
+
+      return {
+        id: seat.id,
+        seatNumber: seat.seatNumber,
+        row: seat.rowNumber ?? (parseInt(seat.seatNumber.slice(0, -1), 10) || 1),
+        column: seat.columnNumber ?? (seat.seatNumber.slice(-1) || 'A'),
+        deck: seat.deckNumber || 1,
+        seatType: seat.seatType || 'STANDARD',
+        status,
+        price: trip.price,
+        heldExpiresAt,
+        reservationId,
+      };
+    });
+
+    const availableSeatsCount = seats.filter(
+      (s) => s.status === 'AVAILABLE',
+    ).length;
+    const heldSeatsCount = seats.filter((s) => s.status === 'HELD').length;
+    const confirmedSeatsCount = seats.filter(
+      (s) => s.status === 'CONFIRMED',
+    ).length;
+    const blockedSeatsCount = seats.filter(
+      (s) => s.status === 'BLOCKED',
+    ).length;
+
+    return {
+      tripId: trip.id,
+      routeCode: trip.route.routeCode,
+      origin: trip.route.originStop.name,
+      destination: trip.route.destinationStop.name,
+      scheduledDeparture: trip.scheduledDeparture,
+      busPlate: trip.bus.plateNumber,
+      busModel: trip.bus.busModel,
+      totalSeats: trip.bus.totalSeats,
+      summary: {
+        total: trip.bus.totalSeats,
+        available: availableSeatsCount,
+        held: heldSeatsCount,
+        confirmed: confirmedSeatsCount,
+        blocked: blockedSeatsCount,
+      },
+      seats,
+    };
   }
 }
