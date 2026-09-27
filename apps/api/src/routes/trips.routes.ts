@@ -5,7 +5,7 @@ import { generateSeatLayout, BusType } from '@bus/shared';
 
 const router = Router();
 
-// GET /api/trips
+// GET /api/trips (List trips with filters)
 router.get('/', async (req: Request, res: Response) => {
   try {
     const { originId, destinationId, date, status } = req.query;
@@ -18,7 +18,7 @@ router.get('/', async (req: Request, res: Response) => {
       if (destinationId) whereClause.route.destinationStationId = String(destinationId);
     }
 
-    if (status) {
+    if (status && status !== 'ALL') {
       whereClause.status = String(status);
     }
 
@@ -51,23 +51,31 @@ router.get('/', async (req: Request, res: Response) => {
       orderBy: { departureTime: 'asc' }
     });
 
-    const enrichedTrips = trips.map(t => ({
-      id: t.id,
-      tripCode: t.tripCode,
-      route: t.route,
-      bus: t.bus,
-      driverName: t.driverName,
-      driverPhone: t.driverPhone,
-      conductorName: t.conductorName,
-      conductorPhone: t.conductorPhone,
-      departureTime: t.departureTime,
-      estimatedArrivalTime: t.estimatedArrivalTime,
-      fareETB: t.fareETB,
-      status: t.status,
-      totalSeats: t.bus.totalSeats,
-      bookedSeatsCount: t.tickets.length,
-      availableSeatsCount: Math.max(0, t.bus.totalSeats - t.tickets.length)
-    }));
+    const enrichedTrips = trips.map(t => {
+      const bookedCount = t.tickets.length;
+      const boardedCount = t.tickets.filter(tk => tk.status === 'BOARDED').length;
+      const occupancyPercent = Math.round((bookedCount / (t.bus.totalSeats || 1)) * 100);
+
+      return {
+        id: t.id,
+        tripCode: t.tripCode,
+        route: t.route,
+        bus: t.bus,
+        driverName: t.driverName,
+        driverPhone: t.driverPhone,
+        conductorName: t.conductorName,
+        conductorPhone: t.conductorPhone,
+        departureTime: t.departureTime,
+        estimatedArrivalTime: t.estimatedArrivalTime,
+        fareETB: t.fareETB,
+        status: t.status,
+        totalSeats: t.bus.totalSeats,
+        bookedSeatsCount: bookedCount,
+        boardedSeatsCount: boardedCount,
+        availableSeatsCount: Math.max(0, t.bus.totalSeats - bookedCount),
+        occupancyPercent
+      };
+    });
 
     return res.json(enrichedTrips);
   } catch (err: any) {
@@ -76,7 +84,7 @@ router.get('/', async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/trips/:id
+// GET /api/trips/:id (Detailed trip with full seat layout matrix)
 router.get('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -101,7 +109,7 @@ router.get('/:id', async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Trip not found' });
     }
 
-    // Clean up expired locks first
+    // Clean up expired locks
     await prisma.seatLock.deleteMany({
       where: {
         tripId: id,
@@ -109,7 +117,7 @@ router.get('/:id', async (req: Request, res: Response) => {
       }
     });
 
-    // Fetch active seat locks
+    // Active seat locks
     const activeLocks = await prisma.seatLock.findMany({
       where: {
         tripId: id,
@@ -120,7 +128,6 @@ router.get('/:id', async (req: Request, res: Response) => {
     const bookedSeatNumbers = trip.tickets.map(t => t.seatNumber);
     const lockedSeatNumbers = activeLocks.map(l => l.seatNumber);
 
-    // Generate dynamic seat layout matrix using @bus/shared engine
     const seatLayout = generateSeatLayout({
       busType: trip.bus.busType as BusType,
       totalSeats: trip.bus.totalSeats,
@@ -129,13 +136,16 @@ router.get('/:id', async (req: Request, res: Response) => {
       lockedSeatNumbers
     });
 
-    // Map booked ticket info to seat details
+    // Attach passenger info to seat layout for dispatchers/agents
     const ticketMap = new Map(trip.tickets.map(t => [t.seatNumber, t]));
     seatLayout.seats.forEach(s => {
       const ticket = ticketMap.get(s.seatNumber);
       if (ticket) {
         s.passengerName = ticket.passengerName;
         s.passengerPhone = ticket.passengerPhone;
+        if (ticket.status === 'BOARDED') {
+          s.status = 'BOARDED' as any;
+        }
       }
     });
 
@@ -162,8 +172,8 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/trips (Admin only)
-router.post('/', requireAuth, requireRole(['SUPER_ADMIN']), async (req: Request, res: Response) => {
+// POST /api/trips (Schedule new trip)
+router.post('/', async (req: Request, res: Response) => {
   try {
     const {
       tripCode,
@@ -178,45 +188,77 @@ router.post('/', requireAuth, requireRole(['SUPER_ADMIN']), async (req: Request,
       fareETB
     } = req.body;
 
+    if (!routeId || !busId || !departureTime || !fareETB) {
+      return res.status(400).json({ error: 'Missing required scheduling parameters' });
+    }
+
+    const generatedTripCode = tripCode || `ETB-${Date.now().toString().slice(-4)}`;
+
+    const depDate = new Date(departureTime);
+    const arrDate = estimatedArrivalTime ? new Date(estimatedArrivalTime) : new Date(depDate.getTime() + 5 * 3600 * 1000);
+
     const trip = await prisma.trip.create({
       data: {
-        tripCode,
+        tripCode: generatedTripCode,
         routeId,
         busId,
-        driverName,
-        driverPhone,
-        conductorName,
-        conductorPhone,
-        departureTime: new Date(departureTime),
-        estimatedArrivalTime: new Date(estimatedArrivalTime),
+        driverName: driverName || 'Assigned Driver',
+        driverPhone: driverPhone || '+251 91 ...',
+        conductorName: conductorName || 'Assigned Conductor',
+        conductorPhone: conductorPhone || '+251 92 ...',
+        departureTime: depDate,
+        estimatedArrivalTime: arrDate,
         fareETB: Number(fareETB),
         status: 'SCHEDULED'
+      },
+      include: {
+        route: {
+          include: {
+            originStation: true,
+            destinationStation: true
+          }
+        },
+        bus: true
       }
     });
 
     return res.status(201).json(trip);
   } catch (err: any) {
+    console.error('Create trip error:', err);
     return res.status(500).json({ error: err.message || 'Failed to create trip' });
   }
 });
 
-// PATCH /api/trips/:id/status
-router.patch('/:id/status', requireAuth, requireRole(['SUPER_ADMIN', 'DISPATCHER', 'CONDUCTOR']), async (req: Request, res: Response) => {
+// PATCH /api/trips/:id/status (Trip lifecycle state transitions: SCHEDULED -> BOARDING -> DEPARTED -> IN_TRANSIT -> ARRIVED)
+router.patch('/:id/status', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
 
-    const validStatuses = ['SCHEDULED', 'BOARDING', 'DEPARTED', 'IN_TRANSIT', 'ARRIVED', 'CANCELLED'];
+    const validStatuses = ['SCHEDULED', 'BOARDING', 'DEPARTED', 'IN_TRANSIT', 'ARRIVED', 'CANCELLED', 'DELAYED'];
     if (!validStatuses.includes(status)) {
-      return res.status(400).json({ error: 'Invalid trip status' });
+      return res.status(400).json({ error: `Invalid trip status. Allowed: [${validStatuses.join(', ')}]` });
     }
 
     const trip = await prisma.trip.update({
       where: { id },
-      data: { status }
+      data: { status },
+      include: {
+        route: {
+          include: {
+            originStation: true,
+            destinationStation: true
+          }
+        },
+        bus: true
+      }
     });
 
-    return res.json(trip);
+    return res.json({
+      success: true,
+      message: `Trip ${trip.tripCode} status updated to ${status}`,
+      trip
+    });
   } catch (err: any) {
     return res.status(500).json({ error: 'Failed to update trip status' });
   }

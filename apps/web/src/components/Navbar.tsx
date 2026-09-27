@@ -1,7 +1,7 @@
 import React from 'react';
-import { Bus, Ticket, Store, ShieldCheck, QrCode, BarChart3, Globe } from 'lucide-react';
+import { Bus, Ticket, Store, ShieldCheck, QrCode, BarChart3, Globe, Radio } from 'lucide-react';
 
-export type AppTab = 'passenger' | 'agent' | 'manifest' | 'conductor' | 'analytics';
+export type AppTab = 'passenger' | 'agent' | 'dispatch' | 'manifest' | 'conductor' | 'analytics';
 
 interface NavbarProps {
   currentTab: AppTab;
@@ -56,50 +56,59 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setTab, isAmharic, s
         </div>
 
         {/* Navigation Tabs */}
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(24, 34, 52, 0.6)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
+        <nav style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(24, 34, 52, 0.6)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border-subtle)', flexWrap: 'wrap' }}>
           <button
             onClick={() => setTab('passenger')}
             className={`btn ${currentTab === 'passenger' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '8px 14px', fontSize: '0.85rem' }}
+            style={{ padding: '8px 12px', fontSize: '0.82rem' }}
           >
-            <Ticket size={16} />
-            <span>{isAmharic ? 'የመንገደኛ ቦታ ማስያዝ' : 'Passenger Booking'}</span>
+            <Ticket size={15} />
+            <span>{isAmharic ? 'ቦታ ማስያዝ' : 'Passenger'}</span>
           </button>
 
           <button
             onClick={() => setTab('agent')}
             className={`btn ${currentTab === 'agent' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '8px 14px', fontSize: '0.85rem' }}
+            style={{ padding: '8px 12px', fontSize: '0.82rem' }}
           >
-            <Store size={16} />
-            <span>{isAmharic ? 'የቅርንጫፍ ካውንተር POS' : 'Branch Agent POS'}</span>
+            <Store size={15} />
+            <span>{isAmharic ? 'ካውንተር POS' : 'Agent POS'}</span>
+          </button>
+
+          <button
+            onClick={() => setTab('dispatch')}
+            className={`btn ${currentTab === 'dispatch' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ padding: '8px 12px', fontSize: '0.82rem' }}
+          >
+            <Radio size={15} />
+            <span>{isAmharic ? 'ስምሪት' : 'Dispatch'}</span>
           </button>
 
           <button
             onClick={() => setTab('manifest')}
             className={`btn ${currentTab === 'manifest' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '8px 14px', fontSize: '0.85rem' }}
+            style={{ padding: '8px 12px', fontSize: '0.82rem' }}
           >
-            <ShieldCheck size={16} />
-            <span>{isAmharic ? 'የፖሊስ ማኒፌስት' : 'Checkpoint Manifest'}</span>
+            <ShieldCheck size={15} />
+            <span>{isAmharic ? 'ማኒፌስት' : 'Manifest'}</span>
           </button>
 
           <button
             onClick={() => setTab('conductor')}
             className={`btn ${currentTab === 'conductor' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '8px 14px', fontSize: '0.85rem' }}
+            style={{ padding: '8px 12px', fontSize: '0.82rem' }}
           >
-            <QrCode size={16} />
-            <span>{isAmharic ? 'ኮንዳክተር QR ስካነር' : 'Conductor Scanner'}</span>
+            <QrCode size={15} />
+            <span>{isAmharic ? 'ስካነር' : 'Scanner'}</span>
           </button>
 
           <button
             onClick={() => setTab('analytics')}
             className={`btn ${currentTab === 'analytics' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '8px 14px', fontSize: '0.85rem' }}
+            style={{ padding: '8px 12px', fontSize: '0.82rem' }}
           >
-            <BarChart3 size={16} />
-            <span>{isAmharic ? 'ማኔጅመንት ዳሽቦርድ' : 'Management'}</span>
+            <BarChart3 size={15} />
+            <span>{isAmharic ? 'ማኔጅመንት' : 'Management'}</span>
           </button>
         </nav>
 

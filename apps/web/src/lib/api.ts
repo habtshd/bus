@@ -75,6 +75,64 @@ export async function fetchManifest(tripId: string) {
   return res.json();
 }
 
+export async function fetchFleet() {
+  const res = await fetch(`${API_BASE}/fleet`);
+  if (!res.ok) throw new Error('Failed to fetch fleet');
+  return res.json();
+}
+
+export async function createBus(data: any) {
+  const res = await fetch(`${API_BASE}/fleet`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Failed to create bus');
+  }
+  return res.json();
+}
+
+export async function updateBusStatus(id: string, status: string) {
+  const res = await fetch(`${API_BASE}/fleet/${id}/status`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status })
+  });
+  if (!res.ok) throw new Error('Failed to update bus status');
+  return res.json();
+}
+
+export async function fetchRoutes() {
+  const res = await fetch(`${API_BASE}/stations/routes`);
+  if (!res.ok) throw new Error('Failed to fetch routes');
+  return res.json();
+}
+
+export async function scheduleTrip(data: any) {
+  const res = await fetch(`${API_BASE}/trips`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Failed to schedule trip');
+  }
+  return res.json();
+}
+
+export async function updateTripStatus(id: string, status: string) {
+  const res = await fetch(`${API_BASE}/trips/${id}/status`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status })
+  });
+  if (!res.ok) throw new Error('Failed to update trip status');
+  return res.json();
+}
+
 export async function fetchAnalytics() {
   const res = await fetch(`${API_BASE}/analytics/dashboard`);
   if (!res.ok) throw new Error('Failed to fetch analytics');
