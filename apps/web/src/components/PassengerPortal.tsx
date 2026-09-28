@@ -30,8 +30,10 @@ import {
   AlertCircle,
   RefreshCw,
   Navigation,
-  ArrowLeftRight
+  ArrowLeftRight,
+  LogOut
 } from 'lucide-react';
+import { PortalAuthCard, AuthUser } from './PortalAuthCard';
 
 
 interface PassengerPortalProps {
@@ -39,6 +41,17 @@ interface PassengerPortalProps {
 }
 
 export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) => {
+  // Passenger Auth Session
+  const [passengerUser, setPassengerUser] = useState<AuthUser | null>(() => {
+    try {
+      const saved = localStorage.getItem('abyssinia_passenger_session') || localStorage.getItem('abyssinia_customer_session');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
   // Trips & Search state
   const [trips, setTrips] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,11 +68,40 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
   const [detailsLoading, setDetailsLoading] = useState(false);
 
   // Passenger Form State
-  const [passengerName, setPassengerName] = useState('');
-  const [passengerPhone, setPassengerPhone] = useState('+251 9');
-  const [passengerId, setPassengerId] = useState('');
+  const [passengerName, setPassengerName] = useState(() => passengerUser?.fullName || '');
+  const [passengerPhone, setPassengerPhone] = useState(() => passengerUser?.phone || '+251 9');
+  const [passengerId, setPassengerId] = useState(() => passengerUser?.nationalId || '');
   const [emergencyContact, setEmergencyContact] = useState('');
   const [emergencyPhone, setEmergencyPhone] = useState('');
+
+  // Auto-fill manifest when passengerUser logs in
+  useEffect(() => {
+    if (passengerUser) {
+      if (passengerUser.fullName) setPassengerName(passengerUser.fullName);
+      if (passengerUser.phone) setPassengerPhone(passengerUser.phone);
+      if (passengerUser.nationalId) setPassengerId(passengerUser.nationalId);
+    }
+  }, [passengerUser]);
+
+  const handlePassengerLoginSuccess = (user: AuthUser, token: string) => {
+    const userWithToken = { ...user, token };
+    setPassengerUser(userWithToken);
+    localStorage.setItem('abyssinia_passenger_session', JSON.stringify(userWithToken));
+    localStorage.setItem('abyssinia_customer_session', JSON.stringify(userWithToken));
+    setShowAuthModal(false);
+    if (user.fullName) setPassengerName(user.fullName);
+    if (user.phone) setPassengerPhone(user.phone);
+    if (user.nationalId) setPassengerId(user.nationalId);
+  };
+
+  const handlePassengerLogout = () => {
+    setPassengerUser(null);
+    localStorage.removeItem('abyssinia_passenger_session');
+    localStorage.removeItem('abyssinia_customer_session');
+    setPassengerName('');
+    setPassengerPhone('+251 9');
+    setPassengerId('');
+  };
 
   // Payment State
   const [paymentMethod, setPaymentMethod] = useState<'TELEBIRR' | 'CBE_BIRR' | 'CHAPA_GATEWAY'>('TELEBIRR');
@@ -550,6 +592,138 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
 
   return (
     <div style={{ padding: '24px 20px', maxWidth: '1440px', margin: '0 auto' }}>
+
+      {/* Passenger Account Header Capsule */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '12px',
+        padding: '12px 20px',
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: '16px',
+        marginBottom: '20px',
+        boxShadow: 'var(--shadow-sm)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{
+            width: '38px',
+            height: '38px',
+            borderRadius: '50%',
+            background: passengerUser ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: passengerUser ? 'var(--ethiopia-green)' : 'var(--ethiopia-gold)',
+            flexShrink: 0
+          }}>
+            {passengerUser ? <ShieldCheck size={20} /> : <User size={18} />}
+          </div>
+          <div>
+            <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>{passengerUser ? passengerUser.fullName : (isAmharic ? 'የተሳፋሪ መለያ ፖርታል' : 'Passenger Account Portal')}</span>
+              {passengerUser ? (
+                <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '999px', background: 'rgba(16, 185, 129, 0.15)', color: 'var(--ethiopia-green)', fontWeight: 700 }}>
+                  {isAmharic ? 'የተረጋገጠ ተሳፋሪ' : 'Verified Traveler'}
+                </span>
+              ) : (
+                <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '999px', background: 'rgba(245, 158, 11, 0.15)', color: 'var(--ethiopia-gold)', fontWeight: 600 }}>
+                  {isAmharic ? 'እንግዳ ተሳፋሪ' : 'Guest Traveler'}
+                </span>
+              )}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              {passengerUser
+                ? `${passengerUser.email} • ${passengerUser.phone || '+251 91 122 3344'} • ID: ${passengerUser.nationalId || 'ET-9912048123'} • Manifest Fast-Track Active`
+                : (isAmharic ? 'ትኬትዎን ለማስተዳደር፣ መረጃዎን በራስ-ሰር ለመሙላት እና ታሪክዎን ለማየት ይግቡ' : 'Sign in or register to fast-track booking manifests and manage your e-tickets')}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          {passengerUser ? (
+            <button
+              onClick={handlePassengerLogout}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 14px',
+                borderRadius: '8px',
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.25)',
+                color: '#ef4444',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              <LogOut size={14} />
+              <span>{isAmharic ? 'ውጣ' : 'Sign Out'}</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowAuthModal(true)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 18px',
+                borderRadius: '999px',
+                background: 'linear-gradient(135deg, var(--ethiopia-gold), #B45309)',
+                border: 'none',
+                color: '#0B0F19',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px var(--ethiopia-gold-glow)'
+              }}
+            >
+              <User size={14} />
+              <span>{isAmharic ? 'የተሳፋሪ መግቢያ / ምዝገባ' : 'Passenger Sign In / Register'}</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Passenger Authentication Modal Overlay */}
+      {showAuthModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.7)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '20px'
+        }}>
+          <div style={{ maxWidth: '480px', width: '100%' }}>
+            <PortalAuthCard
+              portalTitle={isAmharic ? 'የተሳፋሪ መለያ መግቢያ' : 'Passenger Account Portal'}
+              portalSubtitle={isAmharic
+                ? 'ትኬትዎን ለመከታተል፣ ቀድሞ የተሞሉ መረጃዎችን ለመጠቀም እና ፈጣን ቦታ ማስያዝ።'
+                : 'Sign in to access your digital tickets, fast-track passenger manifests, and view travel history.'}
+              portalBadge={isAmharic ? 'የተሳፋሪ ፖርታል' : 'Passenger Portal'}
+              portalBadgeColor="var(--ethiopia-gold)"
+              allowRegistration={true}
+              presets={[
+                { label: 'Almaz Tadesse', roleName: 'PASSENGER', email: 'almaz.passenger@example.com', password: 'Password123!', badge: 'Frequent Traveler' },
+                { label: 'John Doe (Tourist)', roleName: 'PASSENGER', email: 'tourist.john@traveler.com', password: 'Password123!', badge: 'International Tourist' }
+              ]}
+              onLoginSuccess={handlePassengerLoginSuccess}
+              onClose={() => setShowAuthModal(false)}
+              isAmharic={isAmharic}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Interactive Stepper Progress Header */}
       <div className="booking-stepper no-print">
@@ -1310,6 +1484,54 @@ export const PassengerPortal: React.FC<PassengerPortalProps> = ({ isAmharic }) =
 
                 {selectedSeats.length > 0 && paymentStep === 'SELECT' && (
                   <form onSubmit={handleCheckout}>
+                    {passengerUser ? (
+                      <div style={{
+                        padding: '8px 12px',
+                        borderRadius: '8px',
+                        background: 'rgba(16, 185, 129, 0.1)',
+                        border: '1px solid rgba(16, 185, 129, 0.25)',
+                        color: 'var(--ethiopia-green)',
+                        fontSize: '0.8rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        marginBottom: '12px'
+                      }}>
+                        <ShieldCheck size={15} />
+                        <span>{isAmharic ? `የተሳፋሪ መረጃ ከ ${passengerUser.fullName} መለያ በራስ-ሰር ተሞልቷል` : `Passenger manifest auto-filled from ${passengerUser.fullName}'s account`}</span>
+                      </div>
+                    ) : (
+                      <div style={{
+                        padding: '8px 12px',
+                        borderRadius: '8px',
+                        background: 'rgba(2, 132, 199, 0.08)',
+                        border: '1px solid rgba(2, 132, 199, 0.2)',
+                        color: '#0284c7',
+                        fontSize: '0.78rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginBottom: '12px'
+                      }}>
+                        <span>{isAmharic ? 'የተመዘገቡ ተሳፋሪ ነዎት?' : 'Have an Abyssinia Passenger Account?'}</span>
+                        <button
+                          type="button"
+                          onClick={() => setShowAuthModal(true)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--ethiopia-gold)',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            textDecoration: 'underline',
+                            fontSize: '0.78rem'
+                          }}
+                        >
+                          {isAmharic ? 'ግባ' : 'Sign In'}
+                        </button>
+                      </div>
+                    )}
+
                     <div className="form-group" style={{ marginBottom: '14px' }}>
                       <label className="form-label">{isAmharic ? 'የተሳፋሪ ሙሉ ስም' : 'Full Name (as on ID / Passport)'}</label>
                       <input

@@ -1,9 +1,14 @@
 export type UserRole =
   | 'SUPER_ADMIN'
+  | 'MANAGEMENT'
+  | 'FINANCE'
   | 'BRANCH_MANAGER'
   | 'TICKET_AGENT'
   | 'DISPATCHER'
   | 'CONDUCTOR'
+  | 'DRIVER'
+  | 'FLEET_MANAGER'
+  | 'CUSTOMER_SUPPORT'
   | 'PASSENGER';
 
 export type BusType = 'LUXURY_2X2' | 'STANDARD_2X3' | 'VIP_FIRST_CLASS_1X2';

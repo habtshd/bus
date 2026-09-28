@@ -101,7 +101,7 @@ export const PilotLaunchCenter: React.FC<PilotLaunchCenterProps> = ({ isAmharic 
     const tests = [
       { name: 'Concurrent Seat Hold (2 users on same seat)', result: 'Atomic lock enforced. User 1 held seat; User 2 received 409 Conflict. Zero double-booking guarantee held.', status: 'PASS' },
       { name: 'Payment Gateway Timeout / Decline Handling', result: 'Unfunded reservation safely rolled back after 5-minute expiry. No ghost tickets issued.', status: 'PASS' },
-      { name: 'Duplicate Payment Idempotency Check', result: 'Replay payment request rejected with duplicate error; customer ledger protected against double-charge.', status: 'PASS' },
+      { name: 'Duplicate Payment Idempotency Check', result: 'Replay payment request rejected with duplicate error; passenger ledger protected against double-charge.', status: 'PASS' },
       { name: 'Operational Emergency: Bus Breakdown Replacement', result: 'Trip reassigned to standby coach BUS-102. Passenger manifests and seat indices preserved intact.', status: 'PASS' },
       { name: 'Operational Emergency: Standby Driver Deployment', result: 'Relief driver Captain Solomon assigned; new credentials verified on driver terminal app.', status: 'PASS' },
       { name: 'Trip Cancellation & Automatic Refund Processing', result: 'Trip flagged CANCELLED. All 45 seats released to available inventory; 100% refund credited.', status: 'PASS' },

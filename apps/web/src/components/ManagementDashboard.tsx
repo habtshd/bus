@@ -32,16 +32,28 @@ import {
   RefreshCw,
   Search,
   Filter,
-  DollarSign
+  DollarSign,
+  LogOut
 } from 'lucide-react';
+import { PortalAuthCard, AuthUser } from './PortalAuthCard';
 
 interface ManagementDashboardProps {
   isAmharic: boolean;
+  onLogout?: () => void;
 }
 
 type ManagementSubTab = 'overview' | 'revenue-reports' | 'security-audit' | 'drivers' | 'branches' | 'staff' | 'routes';
 
-export const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ isAmharic }) => {
+export const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ isAmharic, onLogout }) => {
+  const [mgmtUser, setMgmtUser] = useState<AuthUser | null>(() => {
+    try {
+      const saved = localStorage.getItem('abyssinia_mgmt_session');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
   const [data, setData] = useState<any>(null);
   const [revenueReports, setRevenueReports] = useState<any>(null);
   const [permissionsData, setPermissionsData] = useState<any>(null);
@@ -150,19 +162,120 @@ export const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ isAmha
     { id: 'u5', name: 'Selamawit Haile', email: 'accountant@abyssiniabus.et', role: 'ACCOUNTANT', branch: 'HQ Finance', phone: '+251 91 222 3344' }
   ];
 
+  // If not logged in, render the Executive Security Gateway
+  if (!mgmtUser) {
+    return (
+      <div style={{ padding: '24px 20px', minHeight: 'calc(100vh - 180px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <PortalAuthCard
+          portalTitle={isAmharic ? 'የስራ አመራር የደህንነት መግቢያ' : 'Executive Management Security Gateway'}
+          portalSubtitle={isAmharic 
+            ? 'ሚስጥራዊ የፋይናንስ፣ የገቢ ሪፖርቶች፣ የሰራተኞች ቁጥጥር እና የኦዲት መዝገብ። ለተፈቀደላቸው የስራ ኃላፊዎች ብቻ።' 
+            : 'Confidential multi-channel financial settlements, corridor yield analytics, RBAC governance, and immutable audit logs.'}
+          portalBadge={isAmharic ? 'ማኔጅመንት ፖርታል' : 'Management Portal · Clearance Level 3'}
+          portalBadgeColor="var(--ethiopia-gold)"
+          allowedRoles={['SUPER_ADMIN', 'MANAGEMENT', 'FINANCE', 'ACCOUNTANT', 'GENERAL_MANAGER']}
+          presets={[
+            { label: 'Dawit Mengistu', roleName: 'SUPER_ADMIN', email: 'admin@abyssiniabus.et', password: 'Password123!', badge: 'Super Admin / Executive Board' },
+            { label: 'Selamawit Haile', roleName: 'FINANCE', email: 'accountant@abyssiniabus.et', password: 'Password123!', badge: 'Head of Finance & Clearing' }
+          ]}
+          onLoginSuccess={(user, token) => {
+            const userWithToken = { ...user, token };
+            setMgmtUser(userWithToken);
+            localStorage.setItem('abyssinia_mgmt_session', JSON.stringify(userWithToken));
+          }}
+          isAmharic={isAmharic}
+        />
+      </div>
+    );
+  }
+
   if (loading || !data) {
     return <div style={{ padding: '60px', textAlign: 'center' }}>Loading executive analytics & finance reports...</div>;
   }
 
   const { today, summary } = data;
 
+  const handleLogout = () => {
+    setMgmtUser(null);
+    localStorage.removeItem('abyssinia_mgmt_session');
+    if (onLogout) onLogout();
+  };
+
   return (
     <div style={{ padding: '24px', maxWidth: '1440px', margin: '0 auto' }}>
+      {/* Executive Session Top Banner */}
+      <div style={{
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: '16px',
+        padding: '16px 24px',
+        marginBottom: '24px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '16px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.03)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '10px',
+            background: 'linear-gradient(135deg, var(--ethiopia-gold), #B45309)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 12px var(--ethiopia-gold-glow)'
+          }}>
+            <Shield size={20} color="#0B0F19" />
+          </div>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <strong style={{ fontSize: '1rem', color: 'var(--text-main)' }}>{mgmtUser.fullName}</strong>
+              <span style={{ fontSize: '0.72rem', padding: '2px 8px', borderRadius: '4px', background: 'rgba(245, 158, 11, 0.15)', color: 'var(--ethiopia-gold)', fontWeight: 700 }}>
+                {mgmtUser.role}
+              </span>
+            </div>
+            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+              Abyssinia Bus S.C. · TIN: 0054892110 · Executive Clearance Verified
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: '#10b981', background: 'rgba(16, 185, 129, 0.1)', padding: '6px 12px', borderRadius: '8px' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></span>
+            <span>Audit Trail Active</span>
+          </div>
+
+          <button
+            onClick={handleLogout}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 14px',
+              borderRadius: '8px',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+              color: '#ef4444',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+          >
+            <LogOut size={14} />
+            <span>{isAmharic ? 'ውጣ' : 'Sign Out'}</span>
+          </button>
+        </div>
+      </div>
+
       {/* Top Header with Navigation Tabs */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <div className="badge badge-gold" style={{ marginBottom: '6px' }}>
-            DAYS 25–27 EXECUTIVE MANAGEMENT, REVENUE & AUDIT
+            PORTAL 3 · EXECUTIVE MANAGEMENT & FINANCIAL CLEARING
           </div>
           <h2 style={{ fontSize: '1.6rem', fontWeight: 800 }}>
             {isAmharic ? 'የስራ አመራር፣ የገቢ ሪፖርቶች እና የደህንነት ኦዲት' : 'Management Cockpit, Revenue & Security Audit'}

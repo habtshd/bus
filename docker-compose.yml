@@ -18,6 +18,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - bus_network
 
   redis:
     image: redis:7-alpine
@@ -32,7 +34,50 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - bus_network
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: bus_api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: "postgresql://bus_admin:bus_secure_password_2026@postgres:5432/bus_platform_db?schema=public"
+      REDIS_URL: "redis://redis:6379"
+      JWT_SECRET: "ethiopian_bus_platform_jwt_secret_key_2026_secure"
+      CHAPA_SECRET_KEY: "CHASECK_TEST-sample_chapa_secret_key"
+      TELEBIRR_APP_ID: "123456789"
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - bus_network
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: bus_web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    networks:
+      - bus_network
 
 volumes:
   postgres_data:
   redis_data:
+
+networks:
+  bus_network:
+    driver: bridge

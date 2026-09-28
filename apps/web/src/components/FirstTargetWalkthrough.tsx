@@ -74,7 +74,7 @@ export const FirstTargetWalkthrough: React.FC<FirstTargetWalkthroughProps> = ({ 
     },
     {
       id: 2,
-      name: isAmharic ? 'ተሳፋሪ (የኦንላይን ቦታ ማስያዝ)' : '2. Customer Web/Mobile',
+      name: isAmharic ? 'ተሳፋሪ (የኦንላይን ቦታ ማስያዝ)' : '2. Passenger Web/Mobile',
       icon: User,
       desc: isAmharic ? 'ፍለጋ፣ የ5-ደቂቃ አቶሚክ መቆለፊያ፣ የቴሌብር ክፍያና የQR ትኬት' : 'Segment Search, 5-Min Atomic Seat 12A Lock, Telebirr & QR Boarding Pass'
     },
@@ -130,7 +130,7 @@ export const FirstTargetWalkthrough: React.FC<FirstTargetWalkthroughProps> = ({ 
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', maxWidth: '750px', lineHeight: 1.5 }}>
             {isAmharic
-              ? 'አንድ ማዕከላዊ የውሂብ ምንጭ (Single Source of Truth) በመጠቀም አስተዳዳሪ፣ የመስመር ላይ ደንበኛ፣ የጣቢያ ካውንተር ኤጀንት፣ የአውቶቡስ ረዳትና የኩባንያ ማኔጅመንት ያለምንም ክፍተት የሚገናኙበት የቀጥታ ስርዓት።'
+              ? 'አንድ ማዕከላዊ የውሂብ ምንጭ (Single Source of Truth) በመጠቀም አስተዳዳሪ፣ የመስመር ላይ ተሳፋሪ፣ የጣቢያ ካውንተር ኤጀንት፣ የአውቶቡስ ረዳትና የኩባንያ ማኔጅመንት ያለምንም ክፍተት የሚገናኙበት የቀጥታ ስርዓት።'
               : 'A battle-tested demonstration proving how Admin, Online Passenger, Counter POS Agent, Bus Conductor, Driver, and Management operate off ONE authoritative inventory engine without double bookings or reconciliation gaps.'}
           </p>
         </div>
@@ -320,21 +320,21 @@ export const FirstTargetWalkthrough: React.FC<FirstTargetWalkthroughProps> = ({ 
 
             <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
               <button onClick={() => setActiveStep(2)} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>{isAmharic ? 'ወደ ደንበኛ ቦታ ማስያዝ ቀጥል' : 'Proceed to Customer Booking'}</span>
+                <span>{isAmharic ? 'ወደ ተሳፋሪ ቦታ ማስያዝ ቀጥል' : 'Proceed to Passenger Booking'}</span>
                 <ArrowRight size={16} />
               </button>
             </div>
           </div>
         )}
 
-        {/* STAGE 2: CUSTOMER WEB / MOBILE */}
+        {/* STAGE 2: PASSENGER WEB / MOBILE */}
         {activeStep === 2 && (
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
               <div>
                 <h2 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <User size={24} color="var(--ethiopia-gold)" />
-                  <span>{isAmharic ? 'ደረጃ 2፡ የደንበኛ ቦታ ማስያዝ፣ የ5-ደቂቃ መቆለፊያና የቴሌብር ክፍያ' : 'Stage 2: Customer Online Booking, 5-Min Hold & Telebirr Checkout'}</span>
+                  <span>{isAmharic ? 'ደረጃ 2፡ የተሳፋሪ ቦታ ማስያዝ፣ የ5-ደቂቃ መቆለፊያና የቴሌብር ክፍያ' : 'Stage 2: Passenger Online Booking, 5-Min Hold & Telebirr Checkout'}</span>
                 </h2>
                 <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '4px' }}>
                   {isAmharic

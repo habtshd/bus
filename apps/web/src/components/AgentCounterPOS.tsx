@@ -76,7 +76,7 @@ export const AgentCounterPOS: React.FC<AgentCounterPOSProps> = ({ isAmharic }) =
   const [ticketToReschedule, setTicketToReschedule] = useState<any>(null);
   const [rescheduleTargetTripId, setRescheduleTargetTripId] = useState<string>('');
   const [rescheduleTargetSeat, setRescheduleTargetSeat] = useState<string>('');
-  const [rescheduleReason, setRescheduleReason] = useState('Customer schedule change');
+  const [rescheduleReason, setRescheduleReason] = useState('Passenger schedule change');
   const [rescheduleSubmitting, setRescheduleSubmitting] = useState(false);
   const [rescheduleSuccessResult, setRescheduleSuccessResult] = useState<any>(null);
 
@@ -1223,7 +1223,7 @@ export const AgentCounterPOS: React.FC<AgentCounterPOSProps> = ({ isAmharic }) =
                   <div>Original Fare: {refundSuccessResult.originalAmountETB} ETB</div>
                   <div>Admin Deduction: -{refundSuccessResult.adminFeeETB} ETB</div>
                   <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--ethiopia-green)', marginTop: '6px' }}>
-                    Cash Returned to Customer: {refundSuccessResult.refundAmountETB} ETB
+                    Cash Returned to Passenger: {refundSuccessResult.refundAmountETB} ETB
                   </div>
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
                     Seats [{refundSuccessResult.releasedSeats.join(', ')}] returned to AVAILABLE inventory.
@@ -1255,7 +1255,7 @@ export const AgentCounterPOS: React.FC<AgentCounterPOSProps> = ({ isAmharic }) =
 
                 <div style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
-                    <span>Customer Refund:</span>
+                    <span>Passenger Refund:</span>
                     <strong style={{ color: 'var(--ethiopia-green)', fontSize: '1.1rem' }}>
                       {(selectedBookingForAction.totalAmountETB * (refundPercentage / 100)).toFixed(2)} ETB
                     </strong>

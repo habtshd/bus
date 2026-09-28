@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   Bus, Ticket, Store, ShieldCheck, QrCode, BarChart3, Radio, 
   Search, Rocket, Sun, Moon, Sparkles, ChevronDown, Check, Smartphone,
-  Layers, ChevronRight, Globe
+  Layers, ChevronRight, Globe, Compass, Headphones, Package, Lock, User
 } from 'lucide-react';
 
 export type AppTab = 
@@ -10,6 +10,10 @@ export type AppTab =
   | 'passenger' 
   | 'mobile-app' 
   | 'my-bookings' 
+  | 'route-guide'
+  | 'live-tracking'
+  | 'customer-support'
+  | 'operations'
   | 'agent' 
   | 'driver' 
   | 'dispatch' 
@@ -38,6 +42,53 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [isPortalsOpen, setIsPortalsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Independent Portal Sessions
+  const [opsUser, setOpsUser] = useState<any>(() => {
+    try {
+      const saved = localStorage.getItem('abyssinia_ops_session');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [mgmtUser, setMgmtUser] = useState<any>(() => {
+    try {
+      const saved = localStorage.getItem('abyssinia_mgmt_session');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [customerUser, setCustomerUser] = useState<any>(() => {
+    try {
+      const saved = localStorage.getItem('abyssinia_customer_session');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    const syncSessions = () => {
+      try {
+        const sOps = localStorage.getItem('abyssinia_ops_session');
+        setOpsUser(sOps ? JSON.parse(sOps) : null);
+        const sMgmt = localStorage.getItem('abyssinia_mgmt_session');
+        setMgmtUser(sMgmt ? JSON.parse(sMgmt) : null);
+        const sCust = localStorage.getItem('abyssinia_customer_session');
+        setCustomerUser(sCust ? JSON.parse(sCust) : null);
+      } catch {}
+    };
+    window.addEventListener('storage', syncSessions);
+    const interval = setInterval(syncSessions, 1000);
+    return () => {
+      window.removeEventListener('storage', syncSessions);
+      clearInterval(interval);
+    };
+  }, []);
+
   // Close dropdown on click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -50,11 +101,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, []);
 
   const isStaffTab = [
-    'agent', 'driver', 'dispatch', 'manifest', 'conductor', 'analytics', 'pilot-launch', 'target-demo'
+    'operations', 'agent', 'driver', 'dispatch', 'manifest', 'conductor', 'analytics', 'pilot-launch', 'target-demo'
   ].includes(currentTab);
 
   const getStaffTabLabel = () => {
     switch (currentTab) {
+      case 'operations': return isAmharic ? 'የስራ ክፍሎች' : 'Operations Portal';
       case 'agent': return isAmharic ? 'ካውንተር POS' : 'Agent POS';
       case 'driver': return isAmharic ? 'አሽከርካሪ' : 'Driver Cockpit';
       case 'dispatch': return isAmharic ? 'ስምሪት' : 'Dispatch';
@@ -63,7 +115,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       case 'analytics': return isAmharic ? 'ማኔጅመንት' : 'Management';
       case 'pilot-launch': return isAmharic ? 'ምረቃ' : 'Launch & Pilot';
       case 'target-demo': return isAmharic ? 'የዒላማ ፍሰት' : '5-Actor Target';
-      default: return isAmharic ? 'የስራ ክፍሎች' : 'Staff Portals';
+      default: return isAmharic ? 'ተጨማሪ መሳሪያዎች' : 'More Tools';
     }
   };
 
@@ -127,7 +179,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Simplified & Modernist Central Navigation */}
+        {/* Simplified & Modernist Central Navigation Featuring 3 Portals */}
         <nav style={{
           display: 'flex',
           alignItems: 'center',
@@ -138,73 +190,101 @@ export const Navbar: React.FC<NavbarProps> = ({
           border: '1px solid var(--border-subtle)',
           boxShadow: 'var(--shadow-sm)'
         }}>
-          {/* 1. Book Trip (Primary Passenger) */}
+          {/* 1. Portal 1: Passenger Portal */}
           <button
             onClick={() => setTab('passenger')}
-            className={`btn ${currentTab === 'passenger' ? 'btn-primary' : 'btn-secondary'}`}
+            className={`btn ${['passenger', 'route-guide', 'live-tracking', 'my-bookings', 'customer-support', 'mobile-app'].includes(currentTab) ? 'btn-primary' : 'btn-secondary'}`}
             style={{
               padding: '7px 16px',
               fontSize: '0.84rem',
               borderRadius: '999px',
-              fontWeight: currentTab === 'passenger' ? 700 : 500,
+              fontWeight: ['passenger', 'route-guide', 'live-tracking', 'my-bookings', 'customer-support', 'mobile-app'].includes(currentTab) ? 700 : 500,
               gap: '6px'
             }}
           >
             <Ticket size={15} />
-            <span>{isAmharic ? 'ትኬት ይቁረጡ' : 'Book Trips'}</span>
+            <span>{isAmharic ? 'የተሳፋሪ ፖርታል' : 'Passenger Portal'}</span>
+            {customerUser ? (
+              <span style={{ fontSize: '0.68rem', padding: '1px 7px', borderRadius: '999px', background: 'rgba(16, 185, 129, 0.25)', color: 'var(--ethiopia-green)', fontWeight: 700 }}>
+                {customerUser.fullName?.split(' ')[0]}
+              </span>
+            ) : (
+              <span style={{ fontSize: '0.68rem', padding: '1px 6px', borderRadius: '999px', background: 'rgba(245, 158, 11, 0.15)', color: 'var(--ethiopia-gold)' }}>
+                {isAmharic ? 'እንግዳ' : 'Guest'}
+              </span>
+            )}
           </button>
 
-          {/* 2. My Bookings */}
+          {/* 2. Portal 2: Operations Portal */}
           <button
-            onClick={() => setTab('my-bookings')}
-            className={`btn ${currentTab === 'my-bookings' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => setTab('operations')}
+            className={`btn ${['operations', 'agent', 'driver', 'dispatch', 'manifest', 'conductor'].includes(currentTab) ? 'btn-primary' : 'btn-secondary'}`}
             style={{
-              padding: '7px 14px',
+              padding: '7px 16px',
               fontSize: '0.84rem',
               borderRadius: '999px',
-              fontWeight: currentTab === 'my-bookings' ? 700 : 500,
+              fontWeight: ['operations', 'agent', 'driver', 'dispatch', 'manifest', 'conductor'].includes(currentTab) ? 700 : 500,
+              gap: '6px',
+              background: ['operations', 'agent', 'driver', 'dispatch', 'manifest', 'conductor'].includes(currentTab) ? 'rgba(2, 132, 199, 0.18)' : undefined,
+              borderColor: ['operations', 'agent', 'driver', 'dispatch', 'manifest', 'conductor'].includes(currentTab) ? '#0284c7' : undefined,
+              color: ['operations', 'agent', 'driver', 'dispatch', 'manifest', 'conductor'].includes(currentTab) ? '#0284c7' : undefined
+            }}
+          >
+            <Layers size={14} />
+            <span>{isAmharic ? 'የስራ ክፍሎች ፖርታል' : 'Operations Portal'}</span>
+            {opsUser ? (
+              <span style={{ fontSize: '0.68rem', padding: '1px 7px', borderRadius: '999px', background: 'rgba(2, 132, 199, 0.25)', color: '#0284c7', fontWeight: 700 }}>
+                {opsUser.fullName?.split(' ')[0]}
+              </span>
+            ) : (
+              <span style={{ fontSize: '0.68rem', padding: '1px 6px', borderRadius: '999px', background: 'rgba(255, 255, 255, 0.08)', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                <Lock size={10} />
+                <span>Auth</span>
+              </span>
+            )}
+          </button>
+
+          {/* 3. Portal 3: Management Portal */}
+          <button
+            onClick={() => setTab('analytics')}
+            className={`btn ${currentTab === 'analytics' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{
+              padding: '7px 16px',
+              fontSize: '0.84rem',
+              borderRadius: '999px',
+              fontWeight: currentTab === 'analytics' ? 700 : 500,
               gap: '6px'
             }}
           >
-            <Search size={14} />
-            <span>{isAmharic ? 'ትኬቴን ፈልግ' : 'My Bookings'}</span>
+            <BarChart3 size={14} />
+            <span>{isAmharic ? 'ማኔጅመንት ፖርታል' : 'Management Portal'}</span>
+            {mgmtUser ? (
+              <span style={{ fontSize: '0.68rem', padding: '1px 7px', borderRadius: '999px', background: 'rgba(245, 158, 11, 0.25)', color: 'var(--ethiopia-gold)', fontWeight: 700 }}>
+                L3 Exec
+              </span>
+            ) : (
+              <span style={{ fontSize: '0.68rem', padding: '1px 6px', borderRadius: '999px', background: 'rgba(255, 255, 255, 0.08)', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                <Lock size={10} />
+                <span>Level 3</span>
+              </span>
+            )}
           </button>
 
-          {/* 3. Mobile App Simulator */}
-          <button
-            onClick={() => setTab('mobile-app')}
-            className={`btn ${currentTab === 'mobile-app' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{
-              padding: '7px 14px',
-              fontSize: '0.84rem',
-              borderRadius: '999px',
-              fontWeight: currentTab === 'mobile-app' ? 700 : 500,
-              gap: '6px'
-            }}
-          >
-            <Smartphone size={14} />
-            <span>{isAmharic ? 'ሞባይል መተግበሪያ' : 'Mobile App'}</span>
-          </button>
-
-          {/* Modernist Portals / Workspaces Dropdown */}
+          {/* Tools & Secondary Dropdown */}
           <div style={{ position: 'relative' }} ref={dropdownRef}>
             <button
               onClick={() => setIsPortalsOpen(prev => !prev)}
-              className={`btn ${isStaffTab ? 'btn-primary' : 'btn-secondary'}`}
+              className={`btn btn-secondary`}
               style={{
                 padding: '7px 14px',
                 fontSize: '0.84rem',
                 borderRadius: '999px',
                 gap: '6px',
-                fontWeight: isStaffTab ? 700 : 500,
-                background: isStaffTab ? 'rgba(245, 158, 11, 0.18)' : undefined,
-                color: isStaffTab ? 'var(--ethiopia-gold)' : undefined,
-                borderColor: isStaffTab ? 'var(--ethiopia-gold)' : undefined
+                fontWeight: 500
               }}
             >
-              <Layers size={14} />
-              <span>{isStaffTab ? getStaffTabLabel() : (isAmharic ? 'የስራ ክፍሎች' : 'Staff & Operations')}</span>
               <ChevronDown size={13} style={{ transform: isPortalsOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+              <span>{isAmharic ? 'ተጨማሪ' : 'More'}</span>
             </button>
 
             {/* Modernist Compact Dropdown Menu */}
@@ -224,6 +304,128 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                   
+                  {/* Route Guides */}
+                  <button
+                    onClick={() => handleSelectTab('route-guide')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      padding: '7px 10px',
+                      background: currentTab === 'route-guide' ? 'rgba(2, 132, 199, 0.12)' : 'transparent',
+                      border: 'none',
+                      borderRadius: '8px',
+                      color: currentTab === 'route-guide' ? '#0284c7' : 'var(--text-main)',
+                      cursor: 'pointer',
+                      fontSize: '0.84rem'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Compass size={15} color="var(--text-muted)" />
+                      <span style={{ fontWeight: 500 }}>{isAmharic ? 'የጉዞ መስመሮች' : 'Route Guides'}</span>
+                    </div>
+                    {currentTab === 'route-guide' && <Check size={14} color="#0284c7" />}
+                  </button>
+
+                  {/* Live Tracking */}
+                  <button
+                    onClick={() => handleSelectTab('live-tracking')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      padding: '7px 10px',
+                      background: currentTab === 'live-tracking' ? 'rgba(2, 132, 199, 0.12)' : 'transparent',
+                      border: 'none',
+                      borderRadius: '8px',
+                      color: currentTab === 'live-tracking' ? '#0284c7' : 'var(--text-main)',
+                      cursor: 'pointer',
+                      fontSize: '0.84rem'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Radio size={15} color="var(--text-muted)" />
+                      <span style={{ fontWeight: 500 }}>{isAmharic ? 'የአውቶቡስ መገኛ' : 'Live Fleet Tracking'}</span>
+                    </div>
+                    {currentTab === 'live-tracking' && <Check size={14} color="#0284c7" />}
+                  </button>
+
+                  {/* My Bookings */}
+                  <button
+                    onClick={() => handleSelectTab('my-bookings')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      padding: '7px 10px',
+                      background: currentTab === 'my-bookings' ? 'rgba(2, 132, 199, 0.12)' : 'transparent',
+                      border: 'none',
+                      borderRadius: '8px',
+                      color: currentTab === 'my-bookings' ? '#0284c7' : 'var(--text-main)',
+                      cursor: 'pointer',
+                      fontSize: '0.84rem'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Search size={15} color="var(--text-muted)" />
+                      <span style={{ fontWeight: 500 }}>{isAmharic ? 'ትኬቴን ፈልግ' : 'My Bookings'}</span>
+                    </div>
+                    {currentTab === 'my-bookings' && <Check size={14} color="#0284c7" />}
+                  </button>
+
+                  {/* Customer Support */}
+                  <button
+                    onClick={() => handleSelectTab('customer-support')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      padding: '7px 10px',
+                      background: currentTab === 'customer-support' ? 'rgba(2, 132, 199, 0.12)' : 'transparent',
+                      border: 'none',
+                      borderRadius: '8px',
+                      color: currentTab === 'customer-support' ? '#0284c7' : 'var(--text-main)',
+                      cursor: 'pointer',
+                      fontSize: '0.84rem'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Headphones size={15} color="var(--text-muted)" />
+                      <span style={{ fontWeight: 500 }}>{isAmharic ? 'የተሳፋሪዎች አገልግሎት' : 'Passenger Support'}</span>
+                    </div>
+                    {currentTab === 'customer-support' && <Check size={14} color="#0284c7" />}
+                  </button>
+
+                  {/* Mobile App Simulator */}
+                  <button
+                    onClick={() => handleSelectTab('mobile-app')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      padding: '7px 10px',
+                      background: currentTab === 'mobile-app' ? 'rgba(2, 132, 199, 0.12)' : 'transparent',
+                      border: 'none',
+                      borderRadius: '8px',
+                      color: currentTab === 'mobile-app' ? '#0284c7' : 'var(--text-main)',
+                      cursor: 'pointer',
+                      fontSize: '0.84rem'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Smartphone size={15} color="var(--text-muted)" />
+                      <span style={{ fontWeight: 500 }}>{isAmharic ? 'ሞባይል መተግበሪያ' : 'Mobile App'}</span>
+                    </div>
+                    {currentTab === 'mobile-app' && <Check size={14} color="#0284c7" />}
+                  </button>
+
+                  <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '3px 0' }} />
+
                   {/* Target Flow */}
                   <button
                     onClick={() => handleSelectTab('target-demo')}
@@ -248,102 +450,28 @@ export const Navbar: React.FC<NavbarProps> = ({
                     {currentTab === 'target-demo' && <Check size={14} color="var(--ethiopia-gold)" />}
                   </button>
 
-                  <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '3px 0' }} />
-
-                  {/* Agent POS */}
+                  {/* Launch & Pilot */}
                   <button
-                    onClick={() => handleSelectTab('agent')}
+                    onClick={() => handleSelectTab('pilot-launch')}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       width: '100%',
                       padding: '7px 10px',
-                      background: currentTab === 'agent' ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
+                      background: currentTab === 'pilot-launch' ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
                       border: 'none',
                       borderRadius: '8px',
-                      color: currentTab === 'agent' ? 'var(--ethiopia-gold)' : 'var(--text-main)',
+                      color: currentTab === 'pilot-launch' ? 'var(--ethiopia-gold)' : 'var(--text-main)',
                       cursor: 'pointer',
                       fontSize: '0.84rem'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Store size={15} color="var(--text-muted)" />
-                      <span style={{ fontWeight: 500 }}>{isAmharic ? 'ካውንተር POS' : 'Agent POS'}</span>
+                      <Rocket size={15} color="var(--text-muted)" />
+                      <span style={{ fontWeight: 500 }}>{isAmharic ? 'ምረቃ' : 'Launch & Pilot'}</span>
                     </div>
-                    {currentTab === 'agent' && <Check size={14} color="var(--ethiopia-gold)" />}
-                  </button>
-
-                  {/* Driver Cockpit */}
-                  <button
-                    onClick={() => handleSelectTab('driver')}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      width: '100%',
-                      padding: '7px 10px',
-                      background: currentTab === 'driver' ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
-                      border: 'none',
-                      borderRadius: '8px',
-                      color: currentTab === 'driver' ? 'var(--ethiopia-gold)' : 'var(--text-main)',
-                      cursor: 'pointer',
-                      fontSize: '0.84rem'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Radio size={15} color="var(--text-muted)" />
-                      <span style={{ fontWeight: 500 }}>{isAmharic ? 'አሽከርካሪ' : 'Driver Cockpit'}</span>
-                    </div>
-                    {currentTab === 'driver' && <Check size={14} color="var(--ethiopia-gold)" />}
-                  </button>
-
-                  {/* Conductor Scanner */}
-                  <button
-                    onClick={() => handleSelectTab('conductor')}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      width: '100%',
-                      padding: '7px 10px',
-                      background: currentTab === 'conductor' ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
-                      border: 'none',
-                      borderRadius: '8px',
-                      color: currentTab === 'conductor' ? 'var(--ethiopia-gold)' : 'var(--text-main)',
-                      cursor: 'pointer',
-                      fontSize: '0.84rem'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <QrCode size={15} color="var(--text-muted)" />
-                      <span style={{ fontWeight: 500 }}>{isAmharic ? 'QR ስካነር' : 'Conductor Scanner'}</span>
-                    </div>
-                    {currentTab === 'conductor' && <Check size={14} color="var(--ethiopia-gold)" />}
-                  </button>
-
-                  {/* Fleet Dispatcher */}
-                  <button
-                    onClick={() => handleSelectTab('dispatch')}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      width: '100%',
-                      padding: '7px 10px',
-                      background: currentTab === 'dispatch' ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
-                      border: 'none',
-                      borderRadius: '8px',
-                      color: currentTab === 'dispatch' ? 'var(--ethiopia-gold)' : 'var(--text-main)',
-                      cursor: 'pointer',
-                      fontSize: '0.84rem'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Radio size={15} color="var(--text-muted)" />
-                      <span style={{ fontWeight: 500 }}>{isAmharic ? 'ስምሪት' : 'Fleet Dispatch'}</span>
-                    </div>
-                    {currentTab === 'dispatch' && <Check size={14} color="var(--ethiopia-gold)" />}
+                    {currentTab === 'pilot-launch' && <Check size={14} color="var(--ethiopia-gold)" />}
                   </button>
 
                   {/* Checkpoint Manifest */}

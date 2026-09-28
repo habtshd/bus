@@ -55,6 +55,64 @@ router.post('/login', async (req: Request, res: Response) => {
   }
 });
 
+// POST /api/auth/register (Passenger registration)
+router.post('/register', async (req: Request, res: Response) => {
+  try {
+    const { email, password, fullName, phone, nationalId } = req.body;
+    if (!email || !password || !fullName) {
+      return res.status(400).json({ error: 'Full name, email, and password are required' });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const existing = await prisma.user.findUnique({
+      where: { email: cleanEmail }
+    });
+
+    if (existing) {
+      return res.status(409).json({ error: 'An account with this email address already exists' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    const newUser = await prisma.user.create({
+      data: {
+        email: cleanEmail,
+        passwordHash,
+        fullName: fullName.trim(),
+        phone: phone ? phone.trim() : '+251 91 122 3344',
+        nationalId: nationalId ? nationalId.trim() : 'ET-9912048123',
+        role: 'PASSENGER',
+        roles: ['PASSENGER'],
+        permissions: ['PASSENGER_PORTAL'],
+        active: true,
+        status: 'ACTIVE'
+      }
+    });
+
+    const token = generateToken({
+      userId: newUser.id,
+      email: newUser.email,
+      role: 'PASSENGER' as UserRole,
+      fullName: newUser.fullName
+    });
+
+    return res.status(201).json({
+      token,
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+        fullName: newUser.fullName,
+        phone: newUser.phone,
+        role: newUser.role
+      }
+    });
+  } catch (err: any) {
+    console.error('Registration error:', err);
+    return res.status(500).json({ error: 'Internal server error during registration' });
+  }
+});
+
 // GET /api/auth/me
 router.get('/me', requireAuth, async (req: AuthRequest, res: Response) => {
   try {

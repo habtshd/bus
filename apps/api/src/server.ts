@@ -13,6 +13,7 @@ import agentRoutes from './routes/agent.routes';
 import driverRoutes from './routes/driver.routes';
 import trackingRoutes from './routes/tracking.routes';
 import securityRoutes from './routes/security.routes';
+import v1Router from './routes/v1';
 
 dotenv.config();
 
@@ -27,7 +28,10 @@ app.use(cors({
 
 app.use(express.json());
 
-// API Routes
+// API v1 Master Router
+app.use('/api/v1', v1Router);
+
+// API Legacy Fallback Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/stations', stationsRoutes);
 app.use('/api/fleet', fleetRoutes);
